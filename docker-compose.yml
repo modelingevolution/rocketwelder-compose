@@ -1,0 +1,67 @@
+name: rocket-welder
+services:
+  modelingevolution.rocketwelder:
+    image: rocketwelder.azurecr.io/rocketwelder:latest
+    container_name: app
+    privileged: true
+    user: root
+    restart: unless-stopped
+    network_mode: "host"
+    depends_on:
+      eventstore.db:
+        condition: service_healthy
+    environment:
+      - UDEV=1
+      - DisableNetworkManager=true
+      - ASPNETCORE_URLS=http://0.0.0.0:80
+      - ASPNETCORE_ENVIRONMENT=Production
+      - GStreamer__PluginPath=/plugins:/usr/local/lib/x86_64-linux-gnu/gstreamer-1.0
+      - FsRoot=/data
+      - RecordingsPath=/app/wwwroot/rec
+      - EventStore=esdb://127.0.0.1:2113?tls=false&tlsVerifyCert=false
+    volumes:
+      - "/dev:/dev"
+      - "/var/data/rocketwelder/app/recordings:/app/wwwroot/rec"
+      - "/var/docker/data/app/logs:/app/logs"
+      - "/var/docker/data/app/models:/app/models"
+      - "/var/docker/data/app/appsettings.runtime.json:/app/appsettings.runtime.json"
+      - "/run/udev:/run/udev:ro"
+      - "/var/run/dbus/system_bus_socket:/var/run/dbus/system_bus_socket"
+      - "/etc/machine-id:/etc/machine-id"
+    ports:
+      - "80:80"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "10"
+   
+  eventstore.db:
+    image: eventstore/eventstore:24.10.5
+    container_name: eventstore
+    restart: unless-stopped
+    user: root
+    environment:
+      - EVENTSTORE_RUN_PROJECTIONS=All
+      - EVENTSTORE_START_STANDARD_PROJECTIONS=true
+      - EVENTSTORE_INSECURE=true
+      - EVENTSTORE_ENABLE_ATOM_PUB_OVER_HTTP=true
+    ports:
+      - "127.0.0.1:2113:2113"
+    volumes:
+      - /var/docker/data/eventstore/data:/var/lib/eventstore
+      - /var/docker/data/eventstore/logs:/var/log/eventstore
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:2113/health/live || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "10"
+
+volumes:
+  eventstore-volume:

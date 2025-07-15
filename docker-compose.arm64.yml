@@ -1,0 +1,18 @@
+# ARM64 architecture overrides for docker-compose.yml with NVIDIA GPU support
+# Usage: docker compose -f docker-compose.yml -f docker-compose.arm64.yml up -d
+
+services:
+  modelingevolution.rocketwelder:
+    # Use ARM64-specific image tag if needed
+    # image: rocketwelder.azurecr.io/rocketwelder:latest-arm64
+    platform: linux/arm64
+    runtime: nvidia
+    environment:
+      - GStreamer__PluginPath=/plugins:/usr/local/lib/aarch64-linux-gnu/gstreamer-1.0
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=all
+    
+  eventstore.db:
+    # ARM64-specific EventStore image
+    image: eventstore/eventstore:24.10.5-alpha-arm64v8
+    platform: linux/arm64

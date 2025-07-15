@@ -1,0 +1,13 @@
+# x64 architecture overrides for docker-compose.yml
+# Usage: docker compose -f docker-compose.yml -f docker-compose.x64.yml up -d
+
+services:
+  modelingevolution.rocketwelder:
+    # Use x64-specific image tag if needed
+    # image: rocketwelder.azurecr.io/rocketwelder:latest-x64
+    platform: linux/amd64
+    
+  eventstore.db:
+    # Standard EventStore image for x64
+    image: eventstore/eventstore:24.10.5
+    platform: linux/amd64
