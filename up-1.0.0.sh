@@ -8,13 +8,17 @@ echo "Running initial RocketWelder migration script for version 1.0.0..."
 
 # Create Docker data directories (system/config data)
 echo "Creating Docker data directories..."
-sudo mkdir -p /var/docker/data/app/{logs,models,config}
+sudo mkdir -p /var/docker/data/app/
+sudo rm -rf /var/docker/data/app/appsettings.runtime.json  
+echo "{}" | sudo tee /var/docker/data/app/appsettings.runtime.json > /dev/null
+sudo chmod 666 /var/docker/data/app/appsettings.runtime.json # Allow all users to read/write
 sudo mkdir -p /var/docker/data/eventstore/{data,logs}
 sudo mkdir -p /var/docker/data/backups
 
 # Create user data directories on dedicated partition
 echo "Creating user data directories..."
 sudo mkdir -p /var/data/rocketwelder/app/recordings
+
 
 # Install additional system dependencies
 if command -v apt-get &> /dev/null; then
@@ -44,6 +48,8 @@ fi
 # Set proper permissions
 echo "Setting permissions..."
 sudo chown -R $USER:$USER /var/docker/data/app
+sudo chown -R $USER:$USER /var/docker/data/app/appsettings.runtime.json
+
 sudo chown -R 1000:1000 /var/docker/data/eventstore  # EventStore requires UID 1000
 sudo chown -R $USER:$USER /var/docker/data/backups
 sudo chown -R $USER:$USER /var/data/rocketwelder
