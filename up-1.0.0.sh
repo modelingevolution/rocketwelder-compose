@@ -9,6 +9,14 @@ echo "Running initial RocketWelder migration script for version 1.0.0..."
 # Create Docker data directories (system/config data)
 echo "Creating Docker data directories..."
 sudo mkdir -p /var/docker/data/app/
+# Stop app container only if it exists and is running
+if sudo docker ps -q -f name=app | grep -q .; then
+    echo "Stopping running app container..."
+    sudo docker stop app
+elif sudo docker ps -a -q -f name=app | grep -q .; then
+    echo "App container exists but is not running, removing..."
+    sudo docker rm app
+fi
 sudo rm -rf /var/docker/data/app/appsettings.runtime.json  
 echo "{}" | sudo tee /var/docker/data/app/appsettings.runtime.json > /dev/null
 sudo chmod 666 /var/docker/data/app/appsettings.runtime.json # Allow all users to read/write
