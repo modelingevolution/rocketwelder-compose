@@ -16,12 +16,13 @@ services:
       - ASPNETCORE_URLS=http://0.0.0.0:80
       - ASPNETCORE_ENVIRONMENT=Production
       - GStreamer__PluginPath=/plugins:/usr/local/lib/x86_64-linux-gnu/gstreamer-1.0
-      - FsRoot=/data
+      - FsRoot=/fsroot
       - RecordingsPath=/app/wwwroot/rec
       - EventStore=esdb://127.0.0.1:2113?tls=false&tlsVerifyCert=false
     volumes:
       - "/dev:/dev"
       - "/var/data/rocketwelder/app/recordings:/app/wwwroot/rec"
+      - "/var/docker/data/app/fs:/fsroot"
       - "/var/docker/data/app/logs:/app/logs"
       - "/var/docker/data/app/models:/app/models"
       - "/var/docker/data/app/appsettings.runtime.json:/app/appsettings.runtime.json"
