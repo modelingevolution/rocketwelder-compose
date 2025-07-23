@@ -4,7 +4,7 @@
 services:
   modelingevolution.rocketwelder:
     # Use ARM64-specific image tag if needed
-    # image: rocketwelder.azurecr.io/rocketwelder:2.1.11
+    # image: rocketwelder.azurecr.io/rocketwelder:2.1.12
     platform: linux/arm64
     runtime: nvidia
     environment:
