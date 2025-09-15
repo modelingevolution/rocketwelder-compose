@@ -5,6 +5,7 @@ services:
   modelingevolution.rocketwelder:
     # Use x64-specific image tag if needed
     # image: rocketwelder.azurecr.io/rocketwelder:2.2.3
+
     platform: linux/amd64
     
   eventstore.db:
