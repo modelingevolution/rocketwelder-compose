@@ -20,7 +20,7 @@ FINAL_BACKUP_FILE="$BACKUP_BASE/backup-$TIMESTAMP.tar.gz"
 
 # Logging function
 log() {
-    echo "[$(date +'%Y-%m-%d %H:%M:%S')] BACKUP: $1"
+    echo "[$(date +'%Y-%m-%d %H:%M:%S')] BACKUP: $1" >&2
 }
 
 # Error handling function
@@ -165,9 +165,9 @@ get_backup_stats() {
     if [ -f "$FINAL_BACKUP_FILE" ]; then
         backup_size=$(du -h "$FINAL_BACKUP_FILE" | cut -f1)
         file_count=$(tar -tzf "$FINAL_BACKUP_FILE" 2>/dev/null | wc -l || echo "unknown")
-        
+
         log "Backup statistics: Size: $backup_size, Files: $file_count"
-        echo "Size: $backup_size, Files: $file_count"
+        echo "Size: $backup_size, Files: $file_count" >&2
     else
         error_exit "Cannot get backup statistics - file missing"
     fi

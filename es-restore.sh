@@ -26,19 +26,19 @@ NC='\033[0m'
 # Logging functions
 log() {
     local message="[$(date +'%Y-%m-%d %H:%M:%S')] RESTORE: $1"
-    echo -e "${GREEN}${message}${NC}"
+    echo -e "${GREEN}${message}${NC}" >&2
     echo "$message" >> "$LOG_FILE"
 }
 
 warn() {
     local message="[$(date +'%Y-%m-%d %H:%M:%S')] RESTORE WARNING: $1"
-    echo -e "${YELLOW}${message}${NC}"
+    echo -e "${YELLOW}${message}${NC}" >&2
     echo "$message" >> "$LOG_FILE"
 }
 
 error() {
     local message="[$(date +'%Y-%m-%d %H:%M:%S')] RESTORE ERROR: $1"
-    echo -e "${RED}${message}${NC}"
+    echo -e "${RED}${message}${NC}" >&2
     echo "$message" >> "$LOG_FILE"
     exit 1
 }
@@ -100,7 +100,7 @@ EOF
     if ls "$BACKUP_BASE"/backup-*.tar.gz >/dev/null 2>&1; then
         ls -1 "$BACKUP_BASE"/backup-*.tar.gz | xargs -I {} basename {}
     else
-        echo "    No backup files found"
+        echo "    No backup files found" >&2
     fi
 }
 
@@ -345,11 +345,11 @@ main() {
     cleanup_old_backups
     
     # Confirmation prompt
-    echo -e "${YELLOW}WARNING: This will stop EventStore and replace all data!${NC}"
-    echo "Backup file: $backup_file"
-    echo "Backup size: $(du -h "$BACKUP_BASE/$backup_file" | cut -f1)"
-    echo "Current data will be backed up to .bak directory"
-    echo
+    echo -e "${YELLOW}WARNING: This will stop EventStore and replace all data!${NC}" >&2
+    echo "Backup file: $backup_file" >&2
+    echo "Backup size: $(du -h "$BACKUP_BASE/$backup_file" | cut -f1)" >&2
+    echo "Current data will be backed up to .bak directory" >&2
+    echo >&2
     read -p "Are you sure you want to continue? (yes/no): " confirmation
     
     if [ "$confirmation" != "yes" ]; then
@@ -379,7 +379,7 @@ main() {
         BACKUP_DATA_DIR=""  # Clear the variable so cleanup doesn't try to remove it again
     fi
     
-    echo -e "${GREEN}EventStore has been restored from backup: $backup_file${NC}"
+    echo -e "${GREEN}EventStore has been restored from backup: $backup_file${NC}" >&2
 }
 
 # Handle help requests
