@@ -30,6 +30,7 @@ services:
       - "/var/docker/data/app/appsettings.runtime.json:/app/appsettings.runtime.json"
       - "/run/udev:/run/udev:ro"
       - "/var/run/dbus/system_bus_socket:/var/run/dbus/system_bus_socket"
+      - "/var/run/docker.sock:/var/run/docker.sock"
       - "/etc/machine-id:/etc/machine-id"
     ports:
       - "80:80"
