@@ -11,6 +11,8 @@ services:
       - GStreamer__PluginPath=/plugins:/usr/local/lib/aarch64-linux-gnu/gstreamer-1.0
       - NVIDIA_VISIBLE_DEVICES=all
       - NVIDIA_DRIVER_CAPABILITIES=all
+    volumes:
+      - "/usr/bin/tegrastats:/usr/bin/tegrastats:ro"
     
   eventstore.db:
     # ARM64-specific EventStore image
