@@ -52,7 +52,7 @@ done
 if [ "$COMMAND" == "list" ]; then
     if [ ! -d "$BACKUP_DIR" ]; then
         if [ "$FORMAT" == "json" ]; then
-            echo '{"backups": []}'
+            echo '[]'
         else
             echo "No backups found"
         fi
@@ -92,7 +92,7 @@ if [ "$COMMAND" == "list" ]; then
     if [ "$FORMAT" == "json" ]; then
         # Build JSON array
         backup_list=$(IFS=,; echo "${BACKUPS[*]}")
-        echo "{\"backups\": [$backup_list]}"
+        echo "[$backup_list]"
     else
         echo "Found ${#BACKUPS[@]} backup(s)"
         for backup in "${BACKUPS[@]}"; do
