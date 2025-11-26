@@ -52,7 +52,7 @@ done
 if [ "$COMMAND" == "list" ]; then
     if [ ! -d "$BACKUP_DIR" ]; then
         if [ "$FORMAT" == "json" ]; then
-            echo '{"success": true, "backups": [], "total_count": 0, "total_size_bytes": 0, "total_size": "0 B"}'
+            echo '{"backups": []}'
         else
             echo "No backups found"
         fi
@@ -61,25 +61,17 @@ if [ "$COMMAND" == "list" ]; then
 
     # Find all backup files
     BACKUPS=()
-    TOTAL_SIZE=0
 
     while IFS= read -r backup_file; do
         if [ -f "$backup_file" ]; then
             filename=$(basename "$backup_file")
             size_bytes=$(stat -c%s "$backup_file" 2>/dev/null || stat -f%z "$backup_file" 2>/dev/null || echo "0")
-            modified=$(stat -c%Y "$backup_file" 2>/dev/null || stat -f%m "$backup_file" 2>/dev/null || echo "0")
 
-            # Try to extract version from filename or metadata file
+            # Try to extract version from metadata file
             version="unknown"
             version_file="${backup_file}.version"
             if [ -f "$version_file" ]; then
                 version=$(cat "$version_file")
-            fi
-
-            # Check if git tag exists (assume it does if version is not unknown)
-            git_tag_exists="false"
-            if [ "$version" != "unknown" ]; then
-                git_tag_exists="true"
             fi
 
             # Format size
@@ -93,31 +85,16 @@ if [ "$COMMAND" == "list" ]; then
                 size="$(( size_bytes / 1073741824 )) GB"
             fi
 
-            # Convert timestamp to ISO 8601 format
-            created_date=$(date -d "@$modified" -Iseconds 2>/dev/null || date -r "$modified" -Iseconds 2>/dev/null || echo "1970-01-01T00:00:00+00:00")
-
-            BACKUPS+=("{\"filename\": \"$filename\", \"version\": \"$version\", \"git_tag_exists\": $git_tag_exists, \"size\": \"$size\", \"size_bytes\": $size_bytes, \"created_date\": \"$created_date\", \"full_path\": \"$backup_file\"}")
-            TOTAL_SIZE=$((TOTAL_SIZE + size_bytes))
+            BACKUPS+=("{\"filename\": \"$filename\", \"version\": \"$version\", \"size\": \"$size\", \"size_bytes\": $size_bytes, \"full_path\": \"$backup_file\"}")
         fi
     done < <(find "$BACKUP_DIR" -name "backup-*.tar.gz" -type f 2>/dev/null | sort -r)
-
-    # Format total size
-    if [ $TOTAL_SIZE -lt 1024 ]; then
-        total_size_formatted="${TOTAL_SIZE} B"
-    elif [ $TOTAL_SIZE -lt 1048576 ]; then
-        total_size_formatted="$(( TOTAL_SIZE / 1024 )) KB"
-    elif [ $TOTAL_SIZE -lt 1073741824 ]; then
-        total_size_formatted="$(( TOTAL_SIZE / 1048576 )) MB"
-    else
-        total_size_formatted="$(( TOTAL_SIZE / 1073741824 )) GB"
-    fi
 
     if [ "$FORMAT" == "json" ]; then
         # Build JSON array
         backup_list=$(IFS=,; echo "${BACKUPS[*]}")
-        echo "{\"success\": true, \"backups\": [$backup_list], \"total_count\": ${#BACKUPS[@]}, \"total_size_bytes\": $TOTAL_SIZE, \"total_size\": \"$total_size_formatted\"}"
+        echo "{\"backups\": [$backup_list]}"
     else
-        echo "Found ${#BACKUPS[@]} backup(s), total size: $total_size_formatted"
+        echo "Found ${#BACKUPS[@]} backup(s)"
         for backup in "${BACKUPS[@]}"; do
             echo "$backup"
         done
