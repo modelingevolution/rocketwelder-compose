@@ -1,7 +1,7 @@
 name: rocket-welder
 services:
   modelingevolution.rocketwelder:
-    image: rocketwelder.azurecr.io/rocketwelder:2.4.7
+    image: rocketwelder.azurecr.io/rocketwelder:2.4.8
     container_name: app
     privileged: true
     user: root
