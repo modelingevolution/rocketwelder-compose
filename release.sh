@@ -11,6 +11,7 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
+FORMAT="text"  # Default format: text or json
 
 # Functions
 print_usage() {
@@ -30,6 +31,7 @@ print_usage() {
     echo "  -M, --major           Auto-increment major version from latest tag"
     echo "  --no-image-update     Skip updating rocketwelder image version"
     echo "  --dry-run             Show what would be done without executing"
+    echo "  --format=json         Output result as JSON (for scripting)"
     echo "  -h, --help            Show this help message"
     echo
     echo "Examples:"
@@ -40,22 +42,43 @@ print_usage() {
     echo "  ./release.sh --patch                        # Auto-increment patch from latest tag"
     echo "  ./release.sh --no-image-update              # Skip image version update"
     echo "  ./release.sh --dry-run                      # Preview release"
+    echo "  ./release.sh --patch -m \"Fixes\" --format=json  # JSON output for scripting"
+    echo
+    echo "JSON OUTPUT FORMAT:"
+    echo "  {\"success\": true, \"version\": \"1.2.3\"}"
+    echo "  {\"success\": false, \"error\": \"error message\"}"
 }
 
 print_error() {
-    echo -e "${RED}Error: $1${NC}" >&2
+    if [ "$FORMAT" = "json" ]; then
+        echo -e "${RED}Error: $1${NC}" >&2
+    else
+        echo -e "${RED}Error: $1${NC}" >&2
+    fi
 }
 
 print_warning() {
-    echo -e "${YELLOW}Warning: $1${NC}"
+    if [ "$FORMAT" = "json" ]; then
+        echo -e "${YELLOW}Warning: $1${NC}" >&2
+    else
+        echo -e "${YELLOW}Warning: $1${NC}"
+    fi
 }
 
 print_success() {
-    echo -e "${GREEN}$1${NC}"
+    if [ "$FORMAT" = "json" ]; then
+        echo -e "${GREEN}$1${NC}" >&2
+    else
+        echo -e "${GREEN}$1${NC}"
+    fi
 }
 
 print_info() {
-    echo -e "${BLUE}$1${NC}"
+    if [ "$FORMAT" = "json" ]; then
+        echo -e "${BLUE}$1${NC}" >&2
+    else
+        echo -e "${BLUE}$1${NC}"
+    fi
 }
 
 # Validate semantic version format (with optional suffix)
@@ -140,16 +163,27 @@ check_working_directory() {
 # Update rocketwelder image version
 update_image_version() {
     local skip_update=$1
-    
+
     if [[ "$skip_update" == "true" ]]; then
         print_info "Skipping rocketwelder image version update (--no-image-update)"
         return 0
     fi
-    
+
     print_info "Updating rocketwelder image version..."
     if [[ -f "./update-version.sh" ]]; then
-        ./update-version.sh update
-        print_success "✓ Updated rocketwelder image version"
+        if [[ "$FORMAT" = "json" ]]; then
+            # Use JSON format and capture result
+            local result=$(./update-version.sh update --format=json)
+            if echo "$result" | grep -q '"success": *true'; then
+                print_success "✓ Updated rocketwelder image version"
+            else
+                print_error "update-version.sh failed"
+                return 1
+            fi
+        else
+            ./update-version.sh update
+            print_success "✓ Updated rocketwelder image version"
+        fi
     else
         print_error "update-version.sh not found"
         return 1
@@ -220,6 +254,10 @@ main() {
                 ;;
             --no-image-update)
                 no_image_update=true
+                shift
+                ;;
+            --format=json)
+                FORMAT="json"
                 shift
                 ;;
             -m|--message)
@@ -308,11 +346,15 @@ main() {
     
     # Create and push tag
     create_tag "$version" || exit 1
-    
-    print_success "🎉 Release $version completed successfully!"
-    print_info ""
-    print_info "Tag v$version has been created and pushed."
-    print_info "View tags: https://github.com/modelingevolution/rocketwelder-compose/tags"
+
+    if [[ "$FORMAT" = "json" ]]; then
+        echo "{\"success\": true, \"version\": \"$version\"}"
+    else
+        print_success "🎉 Release $version completed successfully!"
+        print_info ""
+        print_info "Tag v$version has been created and pushed."
+        print_info "View tags: https://github.com/modelingevolution/rocketwelder-compose/tags"
+    fi
 }
 
 # Run main function

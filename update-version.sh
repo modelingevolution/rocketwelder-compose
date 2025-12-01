@@ -19,18 +19,31 @@ REGISTRY="rocketwelder.azurecr.io"
 IMAGE_NAME="rocketwelder"
 VERSION_FILE="$SCRIPT_DIR/rocketwelder.version"
 COMPOSE_FILE="$SCRIPT_DIR/docker-compose.yml"
+FORMAT="text"  # Default format: text or json
 
-# Logging functions
+# Logging functions - redirect to stderr when JSON format is enabled
 log_info() {
-    echo -e "${GREEN}[INFO]${NC} $1"
+    if [ "$FORMAT" = "json" ]; then
+        echo -e "${GREEN}[INFO]${NC} $1" >&2
+    else
+        echo -e "${GREEN}[INFO]${NC} $1"
+    fi
 }
 
 log_error() {
-    echo -e "${RED}[ERROR]${NC} $1"
+    if [ "$FORMAT" = "json" ]; then
+        echo -e "${RED}[ERROR]${NC} $1" >&2
+    else
+        echo -e "${RED}[ERROR]${NC} $1"
+    fi
 }
 
 log_warn() {
-    echo -e "${YELLOW}[WARN]${NC} $1"
+    if [ "$FORMAT" = "json" ]; then
+        echo -e "${YELLOW}[WARN]${NC} $1" >&2
+    else
+        echo -e "${YELLOW}[WARN]${NC} $1"
+    fi
 }
 
 show_help() {
@@ -47,11 +60,19 @@ COMMANDS:
     list                    List available versions from ACR
     help                    Show this help message
 
+OPTIONS:
+    --format=json           Output result as JSON (for scripting)
+
 EXAMPLES:
     ./update-version.sh check                # Show current version
     ./update-version.sh update               # Update to latest version
     ./update-version.sh set 2.1.0            # Set to specific version
     ./update-version.sh list                 # List available versions
+    ./update-version.sh set 2.1.0 --format=json  # Set version with JSON output
+
+JSON OUTPUT FORMAT:
+    {"success": true, "version": "2.1.0"}
+    {"success": false, "error": "error message"}
 
 EOF
 }
@@ -152,28 +173,28 @@ get_latest_version() {
 
 update_version() {
     local new_version="$1"
-    
+
     log_info "Updating RocketWelder version to $new_version"
-    
+
     # Validate version format
     if ! [[ "$new_version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
         log_error "Invalid version format: $new_version. Expected format: X.Y.Z (e.g., 2.1.0)"
         return 1
     fi
-    
+
     # Update the version file
     echo "$new_version" > "$VERSION_FILE"
     log_info "✓ Updated rocketwelder.version to $new_version"
-    
+
     # Update docker-compose.yml
     if [ -f "$COMPOSE_FILE" ]; then
         # Create backup
         cp "$COMPOSE_FILE" "$COMPOSE_FILE.bak"
-        
+
         # Update the image version
         sed -i "s|image: $REGISTRY/$IMAGE_NAME:[^[:space:]]*|image: $REGISTRY/$IMAGE_NAME:$new_version|g" "$COMPOSE_FILE"
         log_info "✓ Updated docker-compose.yml image to $REGISTRY/$IMAGE_NAME:$new_version"
-        
+
         # Also update architecture-specific compose files if they exist
         for arch_file in "$SCRIPT_DIR/docker-compose.x64.yml" "$SCRIPT_DIR/docker-compose.arm64.yml"; do
             if [ -f "$arch_file" ]; then
@@ -182,25 +203,54 @@ update_version() {
             fi
         done
     fi
-    
-    log_info "Version update completed!"
-    echo
-    echo "To apply the changes, run:"
-    echo "  docker-compose pull"
-    echo "  docker-compose up -d"
+
+    if [ "$FORMAT" != "json" ]; then
+        log_info "Version update completed!"
+        echo
+        echo "To apply the changes, run:"
+        echo "  docker-compose pull"
+        echo "  docker-compose up -d"
+    fi
 }
 
+# Parse options first
+COMMAND=""
+VERSION_ARG=""
+for arg in "$@"; do
+    case "$arg" in
+        --format=json)
+            FORMAT="json"
+            ;;
+        --*)
+            log_error "Unknown option: $arg"
+            show_help
+            exit 1
+            ;;
+        *)
+            if [ -z "$COMMAND" ]; then
+                COMMAND="$arg"
+            elif [ -z "$VERSION_ARG" ]; then
+                VERSION_ARG="$arg"
+            fi
+            ;;
+    esac
+done
+
 # Main script logic
-if [ $# -eq 0 ]; then
+if [ -z "$COMMAND" ]; then
     log_error "No command provided"
     show_help
     exit 1
 fi
 
-case "$1" in
+case "$COMMAND" in
     "check")
         current_version=$(get_current_version)
-        log_info "Current version: $current_version"
+        if [ "$FORMAT" = "json" ]; then
+            echo "{\"success\": true, \"version\": \"$current_version\"}"
+        else
+            log_info "Current version: $current_version"
+        fi
         ;;
     "update")
         latest_version=$(get_latest_version)
@@ -208,17 +258,42 @@ case "$1" in
         current_version=$(get_current_version)
         if [ "$latest_version" = "$current_version" ]; then
             log_info "Already at latest version: $latest_version"
+            if [ "$FORMAT" = "json" ]; then
+                echo "{\"success\": true, \"version\": \"$latest_version\", \"updated\": false}"
+            fi
         else
-            update_version "$latest_version"
+            if update_version "$latest_version"; then
+                if [ "$FORMAT" = "json" ]; then
+                    echo "{\"success\": true, \"version\": \"$latest_version\", \"updated\": true}"
+                fi
+            else
+                if [ "$FORMAT" = "json" ]; then
+                    echo "{\"success\": false, \"error\": \"Failed to update version\"}"
+                fi
+                exit 1
+            fi
         fi
         ;;
     "set")
-        if [ -z "$2" ]; then
+        if [ -z "$VERSION_ARG" ]; then
             log_error "Please provide a version number"
-            echo "Usage: $0 set <version>"
+            if [ "$FORMAT" != "json" ]; then
+                echo "Usage: $0 set <version>"
+            else
+                echo "{\"success\": false, \"error\": \"Version number required\"}"
+            fi
             exit 1
         fi
-        update_version "$2"
+        if update_version "$VERSION_ARG"; then
+            if [ "$FORMAT" = "json" ]; then
+                echo "{\"success\": true, \"version\": \"$VERSION_ARG\"}"
+            fi
+        else
+            if [ "$FORMAT" = "json" ]; then
+                echo "{\"success\": false, \"error\": \"Failed to set version\"}"
+            fi
+            exit 1
+        fi
         ;;
     "list")
         list_versions
@@ -227,7 +302,7 @@ case "$1" in
         show_help
         ;;
     *)
-        log_error "Unknown command: $1"
+        log_error "Unknown command: $COMMAND"
         show_help
         exit 1
         ;;
