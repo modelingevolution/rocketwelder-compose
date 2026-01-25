@@ -174,8 +174,8 @@ autodetect_hardware() {
 
     echo "" >&2
 
-    # Return detected values (space-separated)
-    echo "${cpu_count} ${primary_interface} ${camera_interface} ${data_disk} ${gpu_type} ${temp_count}"
+    # Return detected values (pipe-separated to preserve empty values)
+    echo "${cpu_count}|${primary_interface}|${camera_interface}|${data_disk}|${gpu_type}|${temp_count}"
 }
 
 # Generate MonitorSettings JSON configuration
@@ -213,11 +213,9 @@ generate_monitor_settings() {
     local row1_json=$(IFS=,; echo "${row1_items[*]}")
     local row2_json=$(IFS=,; echo "${row2_items[*]}")
 
-    # Build JSON using jq
-    local gpu_json=""
-    if [ -n "$gpu_type" ]; then
-        gpu_json="\"GpuCollectorType\": \"${gpu_type}\","
-    fi
+    # Build JSON - always include GpuCollectorType, default to "none" if no GPU detected
+    local gpu_value="${gpu_type:-none}"
+    local gpu_json="\"GpuCollectorType\": \"${gpu_value}\","
 
     # Generate JSON
     cat <<EOF
@@ -297,7 +295,7 @@ main() {
 
     # Detect hardware
     local detection_result=$(autodetect_hardware)
-    read cpu_count primary_interface camera_interface data_disk gpu_type temp_count <<< "$detection_result"
+    IFS='|' read cpu_count primary_interface camera_interface data_disk gpu_type temp_count <<< "$detection_result"
 
     # Generate MonitorSettings JSON to temp file
     generate_monitor_settings "$cpu_count" "$primary_interface" "$camera_interface" "$data_disk" "$gpu_type" "$temp_count" > /tmp/monitor_settings.json
@@ -313,9 +311,7 @@ main() {
         log_info "Camera Network: ${camera_interface}"
     fi
     log_info "Disk: ${data_disk}"
-    if [ -n "$gpu_type" ]; then
-        log_info "GPU: ${gpu_type}"
-    fi
+    log_info "GPU: ${gpu_type:-none}"
     if [ "$temp_count" -gt 0 ]; then
         log_info "Temperature Sensors: ${temp_count}"
     fi

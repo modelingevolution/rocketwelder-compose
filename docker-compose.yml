@@ -1,7 +1,7 @@
 name: rocket-welder
 services:
   modelingevolution.rocketwelder:
-    image: rocketwelder.azurecr.io/rocketwelder:2.4.19
+    image: rocketwelder.azurecr.io/rocketwelder:2.6.1
     container_name: app
     privileged: true
     user: root
@@ -23,7 +23,7 @@ services:
     volumes:
       - "/dev:/dev"
       - "/var/data/rocketwelder/app/recordings:/app/wwwroot/rec"
-      - "/var/data/rocket-welder/app/temp-recordings:/temp-recordings"
+      - "/var/data/rocketwelder/app/temp-recordings:/temp-recordings"
       - "/var/docker/data/app/fs:/fsroot"
       - "/var/docker/data/app/logs:/app/logs"
       - "/var/docker/data/app/models:/app/models"
