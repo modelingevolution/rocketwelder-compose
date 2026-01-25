@@ -188,7 +188,7 @@ cleanup_old_backups() {
             if [ -f "$old_backup" ]; then
                 log "Deleting old backup: $(basename "$old_backup")"
                 rm -f "$old_backup"
-                ((deleted_count++))
+                ((++deleted_count))
             fi
         done <<< "$old_backups"
     fi
