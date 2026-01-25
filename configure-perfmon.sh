@@ -243,6 +243,7 @@ update_appsettings() {
     if [ ! -f "$APPSETTINGS_PATH" ]; then
         log_warn "File not found: $APPSETTINGS_PATH"
         log_warn "Creating new file with default settings"
+        mkdir -p "$(dirname "$APPSETTINGS_PATH")"
         echo '{}' > "$APPSETTINGS_PATH"
     fi
 
