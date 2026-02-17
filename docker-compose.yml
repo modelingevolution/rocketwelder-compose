@@ -23,6 +23,8 @@ services:
       - Ide__RepositoryStoragePath=/repositories
     volumes:
       - "/dev:/dev"
+      - "/tmp:/tmp"
+      - "/dev/shm:/dev/shm"
       - "/var/data/rocketwelder/app/recordings:/app/wwwroot/rec"
       - "/var/data/rocketwelder/app/temp-recordings:/temp-recordings"
       - "/var/docker/data/app/fs:/fsroot"
