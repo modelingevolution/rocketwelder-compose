@@ -21,6 +21,7 @@ services:
       - TempRecordingsPath=/temp-recordings
       - EventStore=esdb://127.0.0.1:2113?tls=false&tlsVerifyCert=false
       - Ide__RepositoryStoragePath=/repositories
+      - Docker__HostingContainerName=app
     volumes:
       - "/dev:/dev"
       - "/tmp:/tmp"
