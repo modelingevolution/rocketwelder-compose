@@ -1,7 +1,7 @@
 name: rocket-welder
 services:
   modelingevolution.rocketwelder:
-    image: rocketwelder.azurecr.io/rocketwelder:2.7.13
+    image: rocketwelder.azurecr.io/rocketwelder:2.7.14
     container_name: app
     privileged: true
     user: root
@@ -20,7 +20,7 @@ services:
       - RecordingsPath=/app/wwwroot/rec
       - TempRecordingsPath=/temp-recordings
       - EventStore=esdb://127.0.0.1:2113?tls=false&tlsVerifyCert=false
-      - Ide__RepositoryStoragePath=/repositories
+      - RepositoryStoragePaths=/repositories
       - Docker__HostingContainerName=app
     volumes:
       - "/dev:/dev"
