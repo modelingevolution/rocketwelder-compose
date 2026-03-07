@@ -16,5 +16,5 @@ services:
     
   eventstore.db:
     # ARM64-specific EventStore image
-    image: eventstore/eventstore:24.10.5-alpha-arm64v8
+    image: eventstore/eventstore:24.10.11-alpha-arm64v8
     platform: linux/arm64

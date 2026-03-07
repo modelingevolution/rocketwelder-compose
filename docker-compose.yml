@@ -46,7 +46,7 @@ services:
         max-file: "10"
    
   eventstore.db:
-    image: eventstore/eventstore:24.10.5
+    image: eventstore/eventstore:24.10.11
     container_name: eventstore
     restart: unless-stopped
     user: root

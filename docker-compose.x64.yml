@@ -10,5 +10,5 @@ services:
     
   eventstore.db:
     # Standard EventStore image for x64
-    image: eventstore/eventstore:24.10.5
+    image: eventstore/eventstore:24.10.11
     platform: linux/amd64
