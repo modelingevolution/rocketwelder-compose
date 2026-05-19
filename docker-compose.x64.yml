@@ -9,6 +9,6 @@ services:
     platform: linux/amd64
     
   eventstore.db:
-    # Standard EventStore image for x64
-    image: eventstore/eventstore:24.10.11
+    # KurrentDB image for x64 (amd64)
+    image: kurrentplatform/kurrentdb:25.1.4
     platform: linux/amd64

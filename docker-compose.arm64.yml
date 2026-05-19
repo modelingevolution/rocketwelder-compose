@@ -15,6 +15,6 @@ services:
       - "/usr/bin/tegrastats:/usr/bin/tegrastats:ro"
     
   eventstore.db:
-    # ARM64-specific EventStore image
-    image: eventstore/eventstore:24.10.11-alpha-arm64v8
+    # KurrentDB ARM64 image — experimental arm64 build (no stable multi-arch tag yet)
+    image: kurrentplatform/kurrentdb:25.1.4-experimental-arm64-8.0-jammy
     platform: linux/arm64

@@ -46,20 +46,25 @@ services:
         max-file: "10"
    
   eventstore.db:
-    image: eventstore/eventstore:24.10.11
+    # KurrentDB (formerly EventStoreDB). KurrentDB 25.x reads the existing
+    # EventStoreDB 24.10 data directory in place — no chunk/index conversion.
+    image: kurrentplatform/kurrentdb:25.1.4
     container_name: eventstore
     restart: unless-stopped
     user: root
     environment:
-      - EVENTSTORE_RUN_PROJECTIONS=All
-      - EVENTSTORE_START_STANDARD_PROJECTIONS=true
-      - EVENTSTORE_INSECURE=true
-      - EVENTSTORE_ENABLE_ATOM_PUB_OVER_HTTP=true
+      - KURRENTDB_RUN_PROJECTIONS=All
+      - KURRENTDB_START_STANDARD_PROJECTIONS=true
+      - KURRENTDB_INSECURE=true
+      - KURRENTDB_ENABLE_ATOM_PUB_OVER_HTTP=true
     ports:
       - "127.0.0.1:2113:2113"
     volumes:
-      - /var/docker/data/eventstore/data:/var/lib/eventstore
-      - /var/docker/data/eventstore/logs:/var/log/eventstore
+      # Host paths unchanged (backup scripts reference them). Container targets
+      # are KurrentDB's native paths — the existing EventStoreDB chunk files are
+      # read in place (verified compatible: ESDB 24.10 -> KurrentDB 25).
+      - /var/docker/data/eventstore/data:/var/lib/kurrentdb
+      - /var/docker/data/eventstore/logs:/var/log/kurrentdb
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:2113/health/live || exit 1"]
       interval: 30s
