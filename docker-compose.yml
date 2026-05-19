@@ -46,9 +46,9 @@ services:
         max-file: "10"
    
   eventstore.db:
-    # KurrentDB (formerly EventStoreDB). KurrentDB 25.x reads the existing
-    # EventStoreDB 24.10 data directory in place — no chunk/index conversion.
-    image: kurrentplatform/kurrentdb:25.1.4
+    # KurrentDB (formerly EventStoreDB). KurrentDB reads the existing EventStoreDB /
+    # earlier-KurrentDB data directory in place — no chunk/index conversion.
+    image: kurrentplatform/kurrentdb:26.1.0
     container_name: eventstore
     restart: unless-stopped
     user: root
