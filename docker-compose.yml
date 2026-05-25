@@ -37,6 +37,13 @@ services:
       - "/var/run/dbus/system_bus_socket:/var/run/dbus/system_bus_socket"
       - "/var/run/docker.sock:/var/run/docker.sock"
       - "/etc/machine-id:/etc/machine-id"
+      # epic-035 iter-4b (FR-5.3, FR-5.4, FR-5.5, FR-6.1, FR-6.3) — AI Chat system
+      # prompt and any future Claude personas are version-controlled here in
+      # rocketwelder-compose and bind-mounted read-only into the welder container.
+      # The host code's PromptLoader (RocketWelder:Prompts:Path = /prompts default)
+      # picks up edits via FileSystemWatcher; restart the welder to apply changes
+      # to the AI Chat system prompt (ChatProcessor caches it at construction).
+      - "./prompts:/prompts:ro"
     ports:
       - "80:80"
     logging:
