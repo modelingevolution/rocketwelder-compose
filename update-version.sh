@@ -14,9 +14,15 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-# Configuration
-REGISTRY="rocketwelder.azurecr.io"
-IMAGE_NAME="rocketwelder"
+# Configuration (Harbor registry)
+REGISTRY="docker.modelingevolution.com"
+IMAGE_NAME="rocketwelder/rocketwelder"   # <project>/<repository> on Harbor
+HARBOR_PROJECT="rocketwelder"
+HARBOR_REPO="rocketwelder"
+HARBOR_API="https://$REGISTRY/api/v2.0"
+# Optional credentials for the Harbor API (a pull robot). Export before running
+# `list`/`update` if the project is private:
+#   HARBOR_USERNAME='robot$rocketwelder+deploy-pull' HARBOR_PASSWORD='<secret>'
 VERSION_FILE="$SCRIPT_DIR/rocketwelder.version"
 COMPOSE_FILE="$SCRIPT_DIR/docker-compose.yml"
 FORMAT="text"  # Default format: text or json
@@ -55,13 +61,17 @@ USAGE:
 
 COMMANDS:
     check                   Show current version
-    update                  Update to latest version from ACR
+    update                  Update to latest version from Harbor
     set <version>           Set specific version (e.g., 2.1.0)
-    list                    List available versions from ACR
+    list                    List available versions from Harbor
     help                    Show this help message
 
 OPTIONS:
     --format=json           Output result as JSON (for scripting)
+
+ENVIRONMENT (for 'list'/'update' on a private project):
+    HARBOR_USERNAME         Harbor robot/user (e.g. 'robot\$rocketwelder+deploy-pull')
+    HARBOR_PASSWORD         Harbor robot/user secret
 
 EXAMPLES:
     ./update-version.sh check                # Show current version
@@ -81,60 +91,57 @@ get_current_version() {
     if [ -f "$VERSION_FILE" ]; then
         cat "$VERSION_FILE" | tr -d '\n'
     else
-        # Try to extract from docker-compose.yml
+        # Try to extract from docker-compose.yml (| delimiter: IMAGE_NAME contains '/')
         if [ -f "$COMPOSE_FILE" ]; then
-            grep -E "image:.*$IMAGE_NAME:" "$COMPOSE_FILE" | head -1 | sed "s/.*$IMAGE_NAME:\([^[:space:]]*\).*/\1/"
+            grep -E "image:.*$IMAGE_NAME:" "$COMPOSE_FILE" | head -1 | sed "s|.*$IMAGE_NAME:\([^[:space:]]*\).*|\1|"
         else
             echo "unknown"
         fi
     fi
 }
 
-# Function to check if we have ACR credentials
-check_acr_auth() {
-    if ! az account show &>/dev/null; then
-        log_error "Not logged in to Azure. Please run: az login"
+# Fetch semver tags for the image from the Harbor API.
+# Honors optional HARBOR_USERNAME/HARBOR_PASSWORD for private projects.
+fetch_versions() {
+    local curl_auth=()
+    if [ -n "${HARBOR_USERNAME:-}" ] && [ -n "${HARBOR_PASSWORD:-}" ]; then
+        curl_auth=(-u "$HARBOR_USERNAME:$HARBOR_PASSWORD")
+    fi
+    curl -fsSL "${curl_auth[@]}" \
+        "$HARBOR_API/projects/$HARBOR_PROJECT/repositories/$HARBOR_REPO/artifacts?page_size=100&with_tag=true" 2>/dev/null \
+        | jq -r '.[].tags[]?.name' 2>/dev/null \
+        | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$'
+}
+
+# Verify the Harbor registry API is reachable (and authorized, if creds given).
+check_registry_auth() {
+    if ! command -v jq >/dev/null 2>&1; then
+        log_error "jq is required. Please install jq."
         return 1
     fi
-    
-    if ! az acr repository show --name "${REGISTRY%%.*}" --repository "$IMAGE_NAME" &>/dev/null; then
-        log_warn "Cannot access ACR. Trying with docker credentials..."
-        # Try with docker if az fails
-        if ! docker manifest inspect "$REGISTRY/$IMAGE_NAME:latest" &>/dev/null; then
-            log_error "Cannot access ACR repository. Please ensure you're logged in:"
-            echo "  az acr login --name ${REGISTRY%%.*}"
-            echo "  OR"
-            echo "  docker login $REGISTRY"
-            return 1
-        fi
+    if ! fetch_versions >/dev/null 2>&1; then
+        log_error "Cannot reach Harbor registry API at $HARBOR_API"
+        log_error "If the project is private, export HARBOR_USERNAME and HARBOR_PASSWORD (a Harbor pull robot)."
+        return 1
     fi
     return 0
 }
 
 list_versions() {
-    log_info "Fetching available versions from ACR..."
-    
-    if ! check_acr_auth; then
+    log_info "Fetching available versions from Harbor..."
+
+    if ! check_registry_auth; then
         return 1
     fi
-    
-    # Try Azure CLI first
-    if az account show &>/dev/null; then
-        versions=$(az acr repository show-tags --name "${REGISTRY%%.*}" --repository "$IMAGE_NAME" --orderby time_desc --output tsv 2>/dev/null | \
-            grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' | \
-            sort -V -r | \
-            head -20)
-    else
-        # Fallback: parse from docker manifest (limited functionality)
-        log_warn "Using limited Docker manifest inspection. Install Azure CLI for full functionality."
-        versions="latest"
-    fi
-    
+
+    local versions
+    versions=$(fetch_versions | sort -V -r | head -20)
+
     if [ -z "$versions" ]; then
         log_error "No versions found"
         return 1
     fi
-    
+
     echo -e "${BLUE}Available versions:${NC}"
     echo "$versions" | while read -r version; do
         current=$(get_current_version)
@@ -147,27 +154,20 @@ list_versions() {
 }
 
 get_latest_version() {
-    log_info "Fetching latest version from ACR..." >&2
-    
-    if ! check_acr_auth; then
+    log_info "Fetching latest version from Harbor..." >&2
+
+    if ! check_registry_auth; then
         exit 1
     fi
-    
-    local latest_version=""
-    
-    # Try Azure CLI first
-    if az account show &>/dev/null; then
-        latest_version=$(az acr repository show-tags --name "${REGISTRY%%.*}" --repository "$IMAGE_NAME" --orderby time_desc --output tsv 2>/dev/null | \
-            grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' | \
-            sort -V | \
-            tail -n1)
-    fi
-    
+
+    local latest_version
+    latest_version=$(fetch_versions | sort -V | tail -n1)
+
     if [ -z "$latest_version" ]; then
-        log_error "Could not fetch latest version from ACR"
+        log_error "Could not fetch latest version from Harbor"
         exit 1
     fi
-    
+
     echo "$latest_version"
 }
 
