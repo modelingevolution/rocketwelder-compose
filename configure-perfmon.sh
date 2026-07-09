@@ -131,6 +131,18 @@ autodetect_hardware() {
         # Extract base device name
         data_disk=$(echo "$data_disk_source" | sed 's|/dev/||' | sed -E 's/[0-9]+$//' | sed 's/p$//')
 
+        # LVM / device-mapper sources (e.g. /dev/mapper/ubuntu--vg-data) keep a slash after
+        # stripping /dev/, which is BOTH an invalid perfmon MetricSource ('Name:Identifier/Count')
+        # and absent from /proc/diskstats by that name. Resolve to the backing physical disk
+        # (stable across reboots, always present) — consistent with the sdaN->sda behaviour.
+        if [[ "$data_disk" == *"/"* ]]; then
+            local phys_disk=$(lsblk -rsno NAME "$data_disk_source" 2>/dev/null | tail -1)
+            if [ -n "$phys_disk" ]; then
+                log_info "LVM source '${data_disk_source}' -> physical disk '${phys_disk}'" >&2
+                data_disk="$phys_disk"
+            fi
+        fi
+
         # Special handling for nvme and mmcblk devices
         if [[ $data_disk =~ ^nvme[0-9]+n[0-9]+p?$ ]]; then
             data_disk=$(echo "$data_disk" | sed 's/p$//')
@@ -201,7 +213,11 @@ generate_monitor_settings() {
 
     # Build first row as JSON array
     local row1_items=("\"CPU/${cpu_count}\"")
-    if [ "$temp_count" -gt 0 ]; then
+    # BlazorPerfMon reads temperature ONLY from the GPU collector; it does not read
+    # /sys/class/thermal or hwmon. So a Temperature tile only ever populates when a GPU is
+    # present — on no-GPU hardware (e.g. POC-400) the thermal zones exist but perfmon has no
+    # source, leaving the tile empty/broken. Gate the tile on GPU presence, not thermal-zone count.
+    if [ "$temp_count" -gt 0 ] && [ -n "$gpu_type" ] && [ "$gpu_type" != "none" ]; then
         row1_items+=("\"Temperature/${temp_count}\"")
     fi
     row1_items+=("\"Docker\"" "\"ComputeLoad/3|col-span:2\"")
