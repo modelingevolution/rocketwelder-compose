@@ -10,5 +10,5 @@ services:
     
   eventstore.db:
     # KurrentDB image for x64 (amd64)
-    image: kurrentplatform/kurrentdb:26.1.0
+    image: kurrentplatform/kurrentdb:26.1.1
     platform: linux/amd64
