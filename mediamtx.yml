@@ -1,0 +1,44 @@
+# RTSP relay for HMI panels (Weintek cMT X "Video In -> IP Camera").
+#
+# A GStreamer pipeline cannot itself be an RTSP server - RTSP serving lives in the
+# gst-rtsp-server library, there is no rtspserversink element. So the RocketWelder pipeline
+# encodes H.264 and pushes RTP here, and MediaMTX republishes it as RTSP. It does NOT
+# transcode; it only relays.
+#
+# Pipeline side (a tee branch in the .gpipe):
+#   ... ! x264enc ! video/x-h264,profile=main ! h264parse config-interval=-1
+#       ! rtph264pay pt=96 config-interval=-1 ! udpsink host=127.0.0.1 port=1234 sync=false
+#
+# Panel side: EasyBuilder Pro -> Video In -> IP Camera, RTSP = <device-ip>:8554/weld
+
+logLevel: info
+
+rtsp: yes
+rtspTransports: [udp, tcp]     # let the panel choose; both are proven to work
+rtspAddress: :8554
+rtpAddress: :8000
+rtcpAddress: :8001
+
+# Nothing else is needed for an HMI. Turn HLS on temporarily if you want to eyeball the
+# stream from a browser while debugging.
+hls: no
+webrtc: no
+rtmp: no
+srt: no
+
+paths:
+  weld:
+    # RTP straight in - no MPEG-TS hop. Measured end to end, MPEG-TS costs ~41 ms
+    # (128 ms vs 87 ms), so this is the low-latency route.
+    source: udp+rtp://0.0.0.0:1234
+    # Mandatory for an RTP source: without it MediaMTX refuses the path with
+    # "rtpSDP was not provided". It tells MediaMTX what the bare RTP stream contains.
+    rtpSDP: |
+      v=0
+      o=- 0 0 IN IP4 127.0.0.1
+      s=rocketwelder
+      c=IN IP4 0.0.0.0
+      t=0 0
+      m=video 1234 RTP/AVP 96
+      a=rtpmap:96 H264/90000
+      a=fmtp:96 packetization-mode=1

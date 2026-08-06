@@ -90,3 +90,19 @@ services:
       options:
         max-size: "5m"
         max-file: "10"
+  # RTSP relay for HMI panels (Weintek cMT X "Video In -> IP Camera").
+  # The RocketWelder pipeline encodes H.264 and pushes RTP to 127.0.0.1:1234 via a tee
+  # branch; this republishes it as rtsp://<device-ip>:8554/weld. Relay only, no transcode.
+  # host networking so the pipeline can reach it on loopback and the panel on the LAN.
+  mediamtx:
+    image: bluenviron/mediamtx:1.20.0
+    container_name: mediamtx
+    restart: unless-stopped
+    network_mode: "host"
+    volumes:
+      - "./mediamtx.yml:/mediamtx.yml:ro"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "3"
