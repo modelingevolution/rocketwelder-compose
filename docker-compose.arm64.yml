@@ -16,5 +16,5 @@ services:
     
   eventstore.db:
     # KurrentDB ARM64 image — experimental arm64 build (no stable multi-arch tag yet)
-    image: kurrentplatform/kurrentdb:26.1.0-experimental-arm64-10.0-noble
+    image: kurrentplatform/kurrentdb:26.1.1-experimental-arm64-10.0-noble
     platform: linux/arm64
