@@ -3,6 +3,9 @@
 
 # Local development overrides
 docker-compose.override.yml
+
+# Host-specific env (KURRENTDB_IMAGE, CLAUDE_API_KEY, …) — never commit
+.env
 appsettings.Development.json
 
 # OS generated files

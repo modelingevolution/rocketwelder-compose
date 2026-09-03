@@ -9,6 +9,6 @@ services:
     platform: linux/amd64
     
   eventstore.db:
-    # KurrentDB image for x64 (amd64)
-    image: kurrentplatform/kurrentdb:26.1.0
+    # Image comes from ${KURRENTDB_IMAGE} in .env (defaults to the base pin). Only the
+    # platform is an arch fact.
     platform: linux/amd64

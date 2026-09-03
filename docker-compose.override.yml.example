@@ -1,0 +1,12 @@
+# Host-specific overrides. Copy to `docker-compose.override.yml` (gitignored) on
+# the host; AutoUpdater auto-includes it last (it globs docker-compose*yml and
+# orders by filename length), so its values win.
+#
+# Example — the arm64/Jetson pylon workaround kept off the shared arch file:
+#   gst-plugin-pylon's class_init walks pylon's GenICam node map inside a dlopen
+#   static-init; pylon 10.4.x's GigE JIT engine (libpylonutilitypcl.so) is not
+#   reentrant-safe there and the gst-launch child dies silently on some hosts.
+services:
+  modelingevolution.rocketwelder:
+    environment:
+      - LD_PRELOAD=/opt/pylon/lib/libpylonutilitypcl.so

@@ -15,6 +15,6 @@ services:
       - "/usr/bin/tegrastats:/usr/bin/tegrastats:ro"
     
   eventstore.db:
-    # KurrentDB ARM64 image — experimental arm64 build (no stable multi-arch tag yet)
-    image: kurrentplatform/kurrentdb:26.1.1-experimental-arm64-10.0-noble
+    # Image comes from ${KURRENTDB_IMAGE} in .env (host-specific: this Jetson pins the
+    # experimental arm64 build). Only the platform is an arch fact.
     platform: linux/arm64
