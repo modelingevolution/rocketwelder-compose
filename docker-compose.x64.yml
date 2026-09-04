@@ -4,7 +4,7 @@
 services:
   modelingevolution.rocketwelder:
     # Use x64-specific image tag if needed
-    # image: docker.modelingevolution.com/rocketwelder/rocketwelder:2.19.2
+    # image: docker.modelingevolution.com/rocketwelder/rocketwelder:2.21.7
 
     platform: linux/amd64
     
