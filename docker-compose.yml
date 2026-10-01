@@ -28,6 +28,12 @@ services:
       - "/dev/shm:/dev/shm"
       - "/var/data/rocketwelder/app/recordings:/app/wwwroot/rec"
       - "/var/data/rocketwelder/app/temp-recordings:/temp-recordings"
+      # epic-113 — the adaptation training dataset (AdaptationDataset:Root). Docker creates the HOST folder on the
+      # first `up` if it is missing; rw2 itself never creates the CONTAINER root, so if this line is ever dropped the
+      # dataset simply stops recording (one warning per run) instead of filling the container layer. Lives on
+      # /var/data next to the recordings, so it is capped (MaxSizeMb 2048) and stops below MinFreeDiskMb (1024).
+      # The key stays OFF until a cell opts in via appsettings.runtime.json "AdaptationDataset": { "Enabled": true }.
+      - "/var/data/rocketwelder/app/adaptation-dataset:/var/data/adaptation-dataset"
       - "/var/docker/data/app/fs:/fsroot"
       - "/var/docker/data/app/logs:/app/logs"
       - "/var/docker/data/app/models:/app/models"
