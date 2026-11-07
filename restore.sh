@@ -72,8 +72,9 @@ fi
 # Extract just the filename if full path was provided
 BACKUP_FILENAME=$(basename "$BACKUP_FILE")
 
-# Execute the EventStore restore script
-if "$RESTORE_SCRIPT" "$BACKUP_FILENAME"; then
+# Execute the EventStore restore script. The AutoUpdater calls this wrapper with no terminal, so it answers
+# es-restore.sh's confirmation itself; otherwise the prompt blocks a rollback until its timeout.
+if echo yes | "$RESTORE_SCRIPT" "$BACKUP_FILENAME"; then
     if [ "$FORMAT" == "json" ]; then
         echo "{\"success\": true}"
     else
