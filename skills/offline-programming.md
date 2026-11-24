@@ -27,8 +27,8 @@ Two MCP servers are used: **rocketwelder** (the station's rw2) and **simulator**
 
 ## Step 2. The placed parts and their seams
 
-1. simulator `scene_by_kind` with kind `workpiece`. It lists the placed parts with their `label` (for example `workpiece/door-a`).
-   Use the parts the person named; write down each `label`.
+1. simulator `list_assets`. It lists everything placed in the scene with its `label` (for example `part/door-a`).
+   Find the parts the person named and write down each `label` exactly as listed.
 2. For each part: simulator `get_placed_part_seams` with `placement` = the label. The answer lists that part's seams in welding
    order. Write down how many seams each part has.
    If a part has no seams, stop and report it: putting seams on a part is not part of this skill.
@@ -48,7 +48,8 @@ that already exist.
 2. rocketwelder `set_program_default` with `programId`, `key` = `Move.Travel`, the `etag`, and
    `speed` = `{ "value": <the speed the person gave>, "unit": "MmPerSecond" }`.
    If the person gave no speed, use 8 mm/s and say so in your report.
-   If it answers 409 "stale etag", the answer carries the current `etag`: call again with that one.
+   If it answers `ProgramEtagMismatchException` (HTTP 409), the program changed since the etag was read: repeat 1 and 2 with the
+   fresh `etag`.
 
 `Move.Travel` is the speed of every straight move: the weld and the 100 mm approach and retract lines.
 
@@ -57,11 +58,12 @@ that already exist.
 rocketwelder `create_program_from_seams` with:
 
 - `id` = the `programId`
-- `placements` = the labels from step 2, as a list (for example `["workpiece/door-a", "workpiece/door-b"]`)
+- `placements` = the labels from step 2, as a list (for example `["part/door-a", "part/door-b"]`)
 - `verdictToleranceMm` = the tolerance the person gave; none given: 2
 - `restartOverlapMm` = the overlap the person gave; none given: 25
 
-Planning takes about 2 to 3 seconds per seam. The answer lists every seam with an `answer`:
+Planning takes from a fraction of a second to about five seconds per seam, so a part with 30 seams can take two to three minutes.
+Wait for the answer; do not call again while it runs. The answer lists every seam with an `answer`:
 
 - `Planned`: nothing to do.
 - `NeedsValue`: `missing` names the value. Call `create_program_from_seams` again with that value.
@@ -104,7 +106,8 @@ overrides, leave it, report its last `failure`, and go on to step 7 with the sea
 Run right after step 5 or 6. Do not move the robot or the carriage in between: the plan starts from where they stand.
 No compile step is needed.
 
-1. rocketwelder `run_program` with the `programId`, `dryRun` = false. Leave `fromStart` out. Write down the `runId`.
+1. rocketwelder `run_program` with the `programId`, `dryRun` = false. Leave `fromStart` out. Write down the run id the answer
+   prints as `Run Id`.
 2. rocketwelder `wait_for_run` with `programId`, `runId`, `timeoutSeconds` = 600.
    If it answers `Still running after 600 s`, call it again with the same arguments, as often as needed.
    A long part takes a long time: at 8 mm/s one metre of weld is about two minutes, plus the moves between seams.
@@ -118,7 +121,7 @@ rocketwelder `get_seam_verdicts` with `id` = the `programId` and `runId`. If it 
 Each seam has a `verdict`:
 
 - `Done`: the weld bead covers the whole seam.
-- `NotDone`: `coveredMm` of `lengthMm` is covered.
+- `NotDone`: in `passes`, `coveredMm` of `lengthMm` is covered.
 - `NeedsValue`: `missing` names what was not available.
 
 ## Step 9. Report
