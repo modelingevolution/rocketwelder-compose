@@ -57,6 +57,11 @@ services:
       # picks up edits via FileSystemWatcher; restart the welder to apply changes
       # to the AI Chat system prompt (ChatProcessor caches it at construction).
       - "./prompts:/prompts:ro"
+      # epic-138 feature-002 C10 — welder-domain skills served by list_skills / load_skill (rocketwelder MCP and the
+      # AI Chat tools). rw2 reads RocketWelder:Skills:Path (default /skills): every top-level *.md with a YAML
+      # frontmatter (name, description, triggers). Its SkillLoader watches the folder, so an edit here is served
+      # without a restart.
+      - "./skills:/skills:ro"
     ports:
       - "80:80"
     logging:
