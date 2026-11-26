@@ -27,6 +27,7 @@ program's points to match. It lives in an **Adaptation block** in the program.
 
 - **You never move the robot.** The person jogs the arm, presses Move joint, captures views and runs the program. You read,
   explain and check. Never call `run_program` or `decide_adaptation` on a station whose kind is `Real` (see `list_stations`).
+- Never pass `confirmRealRobot`, on any tool. The station's name in it lets a move through on a `Real` station.
 - A change tool (`set_point_correction`, `remove_point_correction`) changes the program. Use it only when the person asks,
   and say what it will write first.
 - Units: mm and degrees. One exception: `get_robot_joints` answers in **radians**, while `get_views` gives the view's joints
@@ -37,8 +38,9 @@ program's points to match. It lives in an **Adaptation block** in the program.
 
 1. `list_programs` → the program's id. `get_program_tree` → the Adaptation block's id.
 2. UI: the program editor, `/teach/program/<program id>`. No Adaptation block yet: the person adds one from the block
-   toolbox. In rw2 2.93.0 and later it goes directly above the selected block. With nothing selected, the first one goes to the start
-   of the program, after any Touch sense.
+   toolbox. In rw2 2.93.0 and later it goes directly above the selected block
+   (never before a Touch sense). With nothing selected, the first one goes to the start of the program, or, when the
+   program has a Touch sense, to the end of the list. So the person first selects the block it should go above.
 3. The person opens the adaptation page with **Set up adaptation** (no views yet) or **Open adaptation**. Its address is
    `/teach/program/<program id>/adaptation/<block id>` (with `/views/<view id>` when a view is selected). The page title is
    "Adaptation — <program> · <n> views". Top left is the **Views** list, the picture is in the middle, and the toolbar is
@@ -49,9 +51,10 @@ program's points to match. It lives in an **Adaptation block** in the program.
 The camera must be calibrated. If it is not, the page says "The camera isn't calibrated yet…". Calibrate first.
 
 1. The person switches the picture to **CAMERA** and jogs the arm until the camera sees the block's points.
-2. Check before the capture: `get_live_overlay` with the program id gives the live frame with every point drawn as an
-   orange cross. `get_live_projection` gives the same as numbers: `inFrame` per point. A good view has `inFrame: true` for
-   every point it should measure, and the person sees each feature on the frame.
+2. Check before the capture: `get_live_overlay` with the program id gives the live frame with each point that is in the
+   frame (and not hidden by its external axes) drawn as an orange cross. `get_live_projection` gives the same as numbers:
+   `inFrame` per point. A good view has `inFrame: true` for every point it should measure, and the person sees each
+   feature on the frame.
 3. With **New view** selected, the person presses **◉ Capture this view**. The photo is taken where the arm stands, and the
    arm's joints are recorded with it. The page then returns to Photo mode with the new photo.
 4. More views: the person jogs to another angle and captures again. A point's height (depth) can be **triangulated** from its
@@ -61,9 +64,11 @@ The camera must be calibrated. If it is not, the page says "The camera isn't cal
    `get_view_photo` shows the stored photo.
 
 **Views are reached by joint moves only** (owner ruling, for adaptation views only). **Move joint** drives the arm to the
-selected view's exact recorded joints. Never use PTP or a linear move to reach a view. The status line reads "Arm at view <n>"
-when every joint is within 0.1°. A view with no recorded joints says "pose only — re-capture to record joints". Under a
-touch-sensed height or plane the run moves a view with the part, and then reaches it by a pose move.
+selected view's exact recorded joints. Never use PTP or a linear move to reach a view. The status line reads "Arm at view
+<n>" when every joint is within 0.1°. A view with no recorded joints (taken before joints were recorded) says "pose only —
+re-capture to record joints". For such a view Move joint falls back to a pose move, so it is not reached by exact joints:
+the person presses Move joint once, then Re-capture, and from then on the view has its joints. Under a touch-sensed height
+or plane the run moves a view with the part, and then reaches it by a pose move.
 
 **Re-capture** (**◉ Re-capture view <n>**) takes the photo where the arm stands now, and the view moves there. To keep the
 view where it is, press **Move joint** first. After a re-capture from a new place, the marks on that view must be placed
@@ -138,8 +143,8 @@ The person starts the run on the station. A simulator station only: you may run 
 ## Step 8. The review window
 
 When the correction is not accepted on its own, the run screen opens the review window. A review waits for an answer only
-while a run screen (or a `watch_run`) holds the run open. With neither, the run applies or refuses it on its own. It shows the reason, every view's
-photo with the points, and a row per point.
+while a run screen (or a `watch_run`) holds the run open. With neither, the run applies or refuses it on its own. It shows
+the reason, every view's photo with the points, and a row per point.
 
 - A point that was not found: the person marks it on the photo and presses **It is here**. **Reset** undoes that.
 - **✓ Accept and continue** applies the correction and welds. Closing the window rejects it, and the block stops.
@@ -156,15 +161,35 @@ photo with the points, and a row per point.
 - per point: taught and solved position
 - the verdict: accepted, auto-accepted, rejected, unwatched, readapt or blocked, with its reasons
 
-A good setup: the verdict is accepted or auto-accepted, every point is found in every view that marks it, and the corrections match
-how far the part really moved. Repeat steps 4–6 for a point
-that is often not found or has a large residual.
+A good setup: the verdict is accepted or auto-accepted, every point is found in every view that marks it, and the
+corrections match how far the part really moved. Repeat steps 4–6 for a point that is often not found or has a large
+residual. Judging in detail: the skill `adaptation-data-and-analysis`.
+
+
+## Labels in Polish
+
+The station UI may be in Polish. The labels this skill names:
+
+| EN | PL |
+|---|---|
+| Set up adaptation / Open adaptation | Skonfiguruj adaptację / Otwórz adaptację |
+| Views / New view | Ujęcia / Nowe ujęcie |
+| PHOTO / CAMERA | ZDJĘCIE / KAMERA |
+| Move joint | Ruch przegubowy |
+| ◉ Capture this view / ◉ Re-capture view <n> | ◉ Przechwyć to ujęcie / ◉ Ponów zdjęcie ujęcia <n> |
+| ⤳ Capture intermediate position / ◉ Re-capture position / Delete | ⤳ Przechwyć pozycję pośrednią / ◉ Ponów pozycję pośrednią / Usuń |
+| Move up / Move down | Przesuń wyżej / Przesuń niżej |
+| Point, Circle, Corner, Lines | Punkt, Okrąg, Narożnik, Linie |
+| Moves the path / Anchored — moves only itself | Przesuwa ścieżkę / Zakotwiczony — przesuwa tylko siebie |
+| ◈ Capture empty reference | ◈ Przechwyć pusty wzorzec |
+| Save | Zapisz |
+| It is here / ✓ Accept and continue | To jest tutaj / ✓ Akceptuj i kontynuuj |
 
 ## Known faults
 
 | Fault | What the person sees | What to do |
 |---|---|---|
-| bug-078, native player (station screen) before rw2 2.93.0 | The photo shows no points. All marking tools are disabled. The status line says "Punkty oznaczaj w przeglądarce…" | Mark in a browser, or update to 2.93.0 or later. |
+| bug-078, native player (station screen) before rw2 2.93.0 | The photo shows no points. All marking tools are disabled. The status line says "Mark points from a browser — this screen cannot show the view's photo for marking." (PL: "Punkty oznaczaj w przeglądarce…") | Mark in a browser, or update to 2.93.0 or later. |
 | bug-078, still open in 2.93.0, Linux native player | One tap sometimes adds two points | Press Undo in the page head: one mark is one undo step. |
 | bug-079, before rw2 2.93.0 | A circle (or any mark) does not appear after the drag. It appears after a page reload | The mark is saved. Reload (F5) and do not mark it again. |
 | bug-080, before rw2 2.93.0 | A new Adaptation block lands at the top of the program, not above the selected block | Move it with the block's ↑ / ↓ to where it belongs. |
