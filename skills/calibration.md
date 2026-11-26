@@ -94,7 +94,7 @@ this calibration".
 | Marker and TCP checks behind a health check | `list_marker_checks`, `get_marker_check`, `list_tcp_checks` |
 | The live picture | `get_camera_frame` |
 
-Run tools for the person's page only. Each answers the page to open, and the person continues there:
+Two run tools only open a page. The person continues there:
 
 - `resume_calibration_run` reopens an unfinished run. Nothing moves. It is refused with a code word: `run-open`,
   `run-saved`, `no-lens-data`, `no-solvable-photo`, `board-moved-since-corners` or `validation-run`.
@@ -110,8 +110,8 @@ asks. It applies to calibration photos only, station-wide.
 ## After a new calibration: what goes stale
 
 - **The camera position** goes stale after a new lens or new joint offsets. The card says "calibrate again: …".
-- **Adaptation views** taken under an older calibration: `get_views` shows `staleUnderCalibrationInForce: true`. When the
-  program opens, the page asks "The calibration has changed": since these views were taken, was the camera moved or
+- **Adaptation views** taken under an older calibration: the `get_views` column `Stale` is true when the camera or lens
+  changed. It does not show a change of the joint offsets alone. When the program opens, the page asks "The calibration has changed": since these views were taken, was the camera moved or
   re-mounted?
 
 | Answer | What it does |
@@ -121,15 +121,22 @@ asks. It applies to calibration photos only, station-wide.
 | **Not sure — take new photos** | sets the photos aside. Each view is taken again and marked again |
 | **Not now** | nothing changes. The question comes back when the program is opened again |
 
-After a new lens, only new photos are right: choose "Not sure — take new photos". When only the joint offsets changed, the
-right answer is "Camera not moved". The program cannot check the answer. A wrong one makes adaptation place the part
+After a new lens, only new photos are right: choose "Not sure — take new photos".
+
+After new joint offsets, the camera position must be calibrated again first: the person runs **Calibrate the camera**
+(step 3), and only then opens the programs. If the camera really did not move, the answer is then "Camera not moved".
+The dialog may offer "Camera not moved" for a joints-only change before step 3 has run: do not answer it until step 3 is
+done.
+
+The program cannot check the answer. A wrong one makes adaptation place the part
 wrong. Re-taking a view: skill `adaptation-setup`.
 
 ## What to send us
 
 Collect these and give them to the person as one message to send to their RocketWelder contact:
 
-1. The rw2 version: the person opens `<station address>/version`.
+1. The rw2 version: the person opens `<station address>/version` (the version `register_station` showed is from when the
+   station was registered).
 2. The camera name, and the text answers of `get_camera_calibration`, `list_calibration_records` and `list_calibration_runs`.
 3. For the run in question: its run id (`cs-…`) and `get_calibration_record` for the revision it saved.
 4. A screenshot of the wizard's result screen (picture fit, accuracy at the tip, the touches' scatter).
