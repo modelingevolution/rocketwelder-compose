@@ -86,12 +86,10 @@ about 10 times a second.
 
 | Symptom | Read | Known cause | What to do |
 |---|---|---|---|
-| Overlay gone in the Player, comes back by itself (often while jogging) | Windows Player only: `%LOCALAPPDATA%\RocketWelderPlayer\logs\client.log` on the PC that shows the Player (never the Neuron), lines `overlay_cost_refused … cost=… limit=…`. Claude Code on that PC reads it itself; with Claude Desktop the person opens it. The Linux Player writes no log file | bug-077: the Player hid a frame whose estimated draw cost passed a limit. Fixed on native-player master, **not in a release** (v1.3.1 has the limit) | Tell the person it is known; the fix comes with the next Player release |
+| Overlay gone in the Player, comes back by itself (often while jogging) | — | A Player fault | Load the `native-player` skill |
 | Points in the wrong place on the live picture | `get_live_overlay` / `get_live_projection` with the `id` of the program (rw2 2.93.0 on) | Calibration or adaptation in force | `list_skills`: load the calibration or adaptation skill if the station has one |
 
-Player started with `--debug` (default `--debug-http-port 9223`): on that computer `http://127.0.0.1:9223/v1/players` shows per
-player `fps`, `frameAgeMs` and `overlayMessages` (messages received). `overlayMessages` climbing with no overlay drawn = the
-Player drops it; not climbing = rw2 is not sending.
+The Player's debug REST and logs: the `native-player` skill.
 
 ## Linear track (generic axis)
 
