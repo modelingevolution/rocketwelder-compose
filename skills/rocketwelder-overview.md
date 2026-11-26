@@ -27,7 +27,7 @@ This skill is the index. Load the skill the routing table names, then work from 
 `list_stations` lists the stations; `select_station` picks the one every other tool acts on. Each station's `kind` is `Real` (a
 real cell) or `Simulator` (a twin).
 
-- You never move a `Real` robot and never pass `confirmRealRobot`. The MCP refuses robot moves on a `Real` station without it.
+- You never move a `Real` robot and never pass `confirmRealRobot`. The MCP refuses robot moves on a `Real` station.
 - On a `Real` station, you read and explain. The person moves, runs, resets and changes things at the station.
 - There is no shell on the station. You use the MCP tools, the station's pages (the person opens `<url>/…`; `url` comes from
   `list_stations`) and the REST routes that a skill names.
