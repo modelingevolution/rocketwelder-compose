@@ -44,9 +44,10 @@ real cell) or `Simulator` (a twin).
 | `/repositories` Repositories | the program repositories (git) |
 | `/station` | the operator's station view (Operator mode); a finished run page goes back to it |
 | `/pipelines` Pipelines | the camera pipelines and their state |
-| `/recordings` Recordings | recorded camera video |
+| `/program-executions` Program executions (Recordings) | the list of program runs |
+| `/recordings` Camera recordings (Recordings) | recorded camera video |
 | `/devices` Devices (Settings) | every device, its status, its settings, "Reset all errors" |
-| `/commissioning` Commissioning (Settings) | marker, TCP check, health check; calibrations at `/commissioning/calibrations` |
+| `/commissioning` Commissioning (Settings) | camera tiles, marker, TCP check; calibrations at `/commissioning/calibrations`, health checks at `/commissioning/health-checks` |
 | `/programming-defaults` Initial settings (Settings) | the station's program defaults |
 | `/plugins` Plugins (Settings) | installed device plugins and their versions |
 | `/settings/system` System (Settings) | the server's system configuration, read-only |
