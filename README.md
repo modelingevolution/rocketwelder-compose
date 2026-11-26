@@ -63,6 +63,10 @@ docker compose logs -f
 - **Image**: `eventstore/eventstore:24.10.5`
 - **Features**: Event sourcing, projections, HTTP API
 
+## 📚 Station skills
+
+`skills/*.md` are the welder-domain skills Claude loads with `list_skills` / `load_skill`. A merged skills-only change is released by CI (`.github/workflows/skills-release.yml`). How to write and test one: [skills-authoring.md](skills-authoring.md).
+
 ## 🔄 AutoUpdater Integration
 
 This compose configuration is designed to work with the [ModelingEvolution AutoUpdater](https://github.com/modelingevolution/autoupdater):

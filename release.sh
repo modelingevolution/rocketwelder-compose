@@ -202,12 +202,12 @@ commit_changes() {
     fi
     
     print_info "Committing changes..."
-    git add .
+    git add . || return 1
     
     if [[ -n "$message" ]]; then
-        git commit -m "$message"
+        git commit -m "$message" || return 1
     else
-        git commit -m "Release v$version"
+        git commit -m "Release v$version" || return 1
     fi
     
     print_success "✓ Changes committed"
@@ -224,10 +224,10 @@ create_tag() {
     fi
     
     print_info "Creating tag: $tag"
-    git tag "$tag"
+    git tag "$tag" || return 1
     
     print_info "Pushing tag to origin..."
-    git push origin "$tag"
+    git push origin "$tag" || { git tag -d "$tag" > /dev/null; return 1; }
     
     print_success "✅ Tag $tag created and pushed successfully"
 }
@@ -297,6 +297,10 @@ main() {
         esac
     done
     
+    # Tags are also cut by CI (.github/workflows/skills-release.yml) and by other sessions: read origin's tags
+    # before choosing a version, so a local clone never picks a version that already exists.
+    git fetch --quiet --tags origin || { print_error "git fetch --tags origin failed"; exit 1; }
+
     # If no version specified, use rocketwelder version or auto-increment
     if [[ -z "$version" ]]; then
         if [[ "$auto_increment_requested" == true ]]; then
