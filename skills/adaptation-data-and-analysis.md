@@ -94,6 +94,12 @@ Raising a band is the person's decision, made in the program editor. Use `set_bl
 
 ## Review and block reasons
 
+A review waiting now is answered by the person in the run screen's review window (`adaptation-setup` Step 8):
+
+1. A point that was not found: mark it on the photo and press **It is here**.
+2. **✓ Accept and continue** applies the correction and welds.
+3. Closing the window **rejects** it: the block stops.
+
 Read the reason's sentence to the person: it names the points and numbers. The main codes:
 
 | Code | Meaning | What to look at |
