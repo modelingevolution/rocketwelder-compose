@@ -7,12 +7,7 @@ triggers: [settings, configuration, station defaults, initial settings, program 
 
 ## When Claude changes a setting
 
-| Station kind (`list_stations`, field `kind`) | Claude changes a setting |
-|---|---|
-| Simulator | When the person asks for that change |
-| Real | When the person asks, Claude says the exact change (key, old value, new value) and makes it only after the person confirms it |
-
-Claude never changes a setting the person did not ask for and never passes `confirmRealRobot`. Before any change, read the current value and tell it to the person.
+Claude changes a setting only when the person asks for that change; never passes `confirmRealRobot`.
 
 ## Where each setting lives
 
@@ -28,12 +23,12 @@ Claude never changes a setting the person did not ask for and never passes `conf
 | Language | Language / Język (`/settings/language`) | — | — | the station's runtime configuration |
 | Plugins | Plugins / Wtyczki (`/plugins`) | — | — | the station's runtime configuration |
 | Portal registration | Integrations / Integracje (`/integration`) | — | — | the station's runtime configuration |
-| Claude settings | Claude Code (`/settings/claude-code`) | — | — | not stated here |
+| Claude settings | Claude Code (`/settings/claude-code`) | — | — | on the station |
 | Licence | Licence / Licencja (`/settings/license`) | — | — | the station's runtime configuration |
 | Server options (paths, ports, connections) | System (`/settings/system`), read only | — | — | configuration files |
 
 All pages except Pipelines are in the Settings / Ustawienia group of the left menu. A station can hide menu entries, and Licence
-shows only in some licence states; the route opens the page in either case, in both languages.
+shows only in some licence states. If an entry is missing, open its route directly (it works in both languages) or ask RocketWelder.
 
 The station's pages have no login: whoever opens the station address can change what a page changes.
 
@@ -87,4 +82,8 @@ Ask RocketWelder for these. Say the setting, the value wanted and why.
 
 | Tool | Effect | Endpoint | Owner |
 |---|---|---|---|
-| `list_device_configurations` | read | rw2 `GET /api/peripheral-devices` (every device with its properties and health, no parameters), marked `.ForAgents("list_device_configurations", ToolEffect.Read)` | rw2 |
+| `list_peripheral_devices` | read | rw2 `GET /api/peripheral-devices` (every device with its properties and health, no parameters), marked `.ForAgents("list_peripheral_devices", ToolEffect.Read)` | rw2 |
+
+## Open questions
+
+- Does "never move a real cell" also cover settings writes on a Real station? (owner)
