@@ -83,7 +83,3 @@ Ask RocketWelder for these. Say the setting, the value wanted and why.
 | Tool | Effect | Endpoint | Owner |
 |---|---|---|---|
 | `list_peripheral_devices` | read | rw2 `GET /api/peripheral-devices` (every device with its properties and health, no parameters), marked `.ForAgents("list_peripheral_devices", ToolEffect.Read)` | rw2 |
-
-## Open questions
-
-- Does "never move a real cell" also cover settings writes on a Real station? (owner)
