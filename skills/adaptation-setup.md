@@ -152,26 +152,24 @@ The person starts the run on the station. A simulator station only: you may run 
 
 ## Step 8. The review window
 
-When the correction is not accepted on its own, the run screen opens the review window. It shows the reason, every view's
-photo with the points, and a row per point. A review waits for an answer only while a run screen (or a `watch_run`) holds
-the run open. With neither, the run applies or refuses it on its own.
+1. A point that was not found: the person marks it on the photo and presses **It is here** (**Reset** undoes it).
+2. **✓ Accept and continue** applies the correction and welds.
+3. Closing the window **rejects** it: the block stops.
 
-**Tell the person this, whole, even before you have a run id:**
+The run screen opens this window when the correction is not accepted on its own. It shows the reason, every view's photo
+with the points, and a row per point. A review waits for an answer only while a run screen (or a `watch_run`) holds the run
+open. With neither, the run applies or refuses it on its own.
 
-> 1. A point that was not found: mark it on the photo and press **It is here** (**Reset** undoes it).
-> 2. **✓ Accept and continue** applies the correction and welds.
-> 3. Closing the window **rejects** it: the block stops.
-> 4. Afterwards, `get_adaptation_result` shows what the run did: per axis X/Y/Z **Corrected** with its mm, or
->    **NotCorrected** / **Unknown** (never a measured 0), and the verdict: accepted, auto-accepted, rejected, unwatched,
->    readapt or blocked, with its reasons.
-
-Then read the review with `get_pending_review` (`programId`, `runId` of the running run from `get_program_status`): the
-reason code and sentence, the proposed fit (tx, ty mm, rotation °), its residual, and per point whether it was found.
-Explain it. On a `Real` station the person decides in the window. `decide_adaptation` is for simulator stations only.
+Read the review with `get_pending_review` (`programId`, `runId` of the running run from `get_program_status`): the reason
+code and sentence, the proposed fit (tx, ty mm, rotation °), its residual, and per point whether it was found. Explain it.
+On a `Real` station the person decides in the window. `decide_adaptation` is for simulator stations only.
 
 ## Step 9. Judge the result
 
-`get_adaptation_result` reads what the run did, from its dataset. Besides the per-axis correction and the verdict (step 8):
+`get_adaptation_result` reads what the run did, from its dataset:
+
+- per axis X/Y/Z: `Corrected` with its mm, or `NotCorrected` / `Unknown`
+- the verdict: accepted, auto-accepted, rejected, unwatched, readapt or blocked, with its reasons
 
 - per anchor: view, point, what it wrote (mm) and its residual (mm)
 - per point: taught and solved position
