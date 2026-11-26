@@ -7,13 +7,31 @@ triggers: [adaptation result, adaptation data, adaptation dataset, is the correc
 
 How a view, a mark and a correction are set up is in the skill `adaptation-setup` (`load_skill`). This skill reads and judges
 what is already there. Every tool here is a read. You never move the robot, and never pass `confirmRealRobot`, on any
-tool: the station's name in it lets a move through on a `Real` station.
+tool: the station's name in it lets a move through on a `Real` station. You never capture, add or re-take views, and
+never mark points: the person does that on the adaptation page (`adaptation-setup`).
+
+## Was the correction good?
+
+Read `get_adaptation_result` for the run, then answer with this checklist. A correction is good when all hold:
+
+1. The verdict is `auto-accepted` or `accepted`, and the reason (if any) is understood.
+2. Every point marked in a view is found in that view (`points` solved, no NOT FOUND on the run page).
+3. `settled` is true.
+4. Per axis X/Y/Z: `Corrected` with its mm, or `NotCorrected` / `Unknown`, which are never a measured 0. The corrected
+   axes and their mm match what the person sees: how far, and in which direction, the part really lies from
+   where it was taught.
+5. On the view overlays the green cross sits on the feature. A cross far from its blue ring means the part, or the mark,
+   moved since teaching.
+6. The weld lands on the seam. This is the final check, and only the person can see it.
+
+A view whose `get_views` column `Stale` is true was taken under an older camera calibration. Before judging anything that
+view measured, the person re-captures it (`adaptation-setup`: Move joint, then Re-capture).
 
 ## The data
 
 | What | Tool / page | Answers |
 |---|---|---|
-| The block's views as stored | `get_views` (`programId`, `blockId`) | per view: id, enabled, joints (degrees), camera pose, `staleUnderCalibrationInForce`, photo URL. Per mark: pixel, kind, correction |
+| The block's views as stored | `get_views` (`programId`, `blockId`) | per view: id, enabled, joints (degrees), camera pose, `Stale` (taken under an older camera calibration), photo URL. Per mark: pixel, kind, correction |
 | A view's reference photo | `get_view_photo` (`programId`, `blockId`, `viewId`) | the JPEG as taken, no marks |
 | A view's photo with the marks | `get_view_overlay` (same) | PNG: green cross = the mark, blue ring = the taught point projected, orange diamond = where the editor draws the point now |
 | The same as numbers | `get_view_projection` (same) | per point: taught position (mm), mark (px), projection (px), drawn position (px), mark-to-projection distance in px and, with a correction, in mm |
@@ -72,14 +90,16 @@ A band is written `accept:review` in mm.
 Per axis, only `Corrected` axes are judged. The worst axis gives the verdict. A band comes from the block, the program's
 defaults (`get_program_defaults`) or the built-in default. `get_block_values` shows which one is in force.
 
+Raising a band is the person's decision, made in the program editor. Use `set_block_value` only when the person asks for it.
+
 ## Review and block reasons
 
 Read the reason's sentence to the person: it names the points and numbers. The main codes:
 
 | Code | Meaning | What to look at |
 |---|---|---|
-| `tolerance_band` | the offset or bend is in the review or block zone | the measured mm against the band. A real move of the part: re-seat it, or raise the band in the program editor |
-| `point_not_found` | a point was not found in the views that mark it | the run page's adaptation row (NOT FOUND) and `get_view_overlay`: lighting, the mark, the part in the frame |
+| `tolerance_band` | the offset or bend is in the review or block zone | the measured mm against the band. A real move of the part: re-seat it and adapt again. To weld at that offset, the person raises the band (`offsetTolerance` or `pathTolerance`) in the program editor; that change is recorded with the program. A blocked block stops; blocks before it may already have welded |
+| `point_not_found` | a point was not found in the views that mark it | the run page's adaptation row (NOT FOUND) and `get_view_overlay`: lighting, the mark, the part in the frame. A view with `Stale` true: the person re-captures it (`adaptation-setup`: Move joint, then Re-capture) and marks again |
 | `not_located` | a group of anchors located nothing | the same as `point_not_found`, for the whole group |
 | `no_fixpoint` | the passes did not settle within 5 | the anchors with the largest residuals |
 | `anchors_too_close` | a group's anchors are less than 10 mm apart in the direction that shows a turn (`AnchorCorrection:MinAnchorBaselineMm`): the group slides by the mean, with no turn | the anchors' positions. Anchors further apart give a turn |
@@ -88,22 +108,6 @@ Read the reason's sentence to the person: it names the points and numbers. The m
 | `found_ray_shallow` | the camera's ray meets the point's plane at less than 15° (`AnchorCorrection:MinRayToPlaneDeg`) | the view's angle to that face: a view looking more squarely at the face |
 
 Other codes have their sentence. Read it as written.
-
-## Judging a correction
-
-A correction is good when all of these hold:
-
-1. The verdict is `auto-accepted` or `accepted`, and the reason (if any) is understood.
-2. Every point marked in a view is found in that view (`points` solved, no NOT FOUND on the run page).
-3. `settled` is true.
-4. The corrected axes and their mm match what the person sees: how far, and in which direction, the part really lies from
-   where it was taught.
-5. On the view overlays the green cross sits on the feature. A cross far from its blue ring means the part, or the mark,
-   moved since teaching.
-6. The weld lands on the seam. This is the final check, and only the person can see it.
-
-A view whose `staleUnderCalibrationInForce` is true was taken under an older camera calibration. Re-capture it before
-judging anything that view measured (`adaptation-setup`).
 
 ## What to send us when the correction is not good
 
