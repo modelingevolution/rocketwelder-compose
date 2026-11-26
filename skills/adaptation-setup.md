@@ -200,8 +200,8 @@ The station UI may be in Polish. The labels this skill names:
 
 | Fault | What the person sees | What to do |
 |---|---|---|
-| bug-078, native player (station screen) before rw2 2.93.0 | The photo shows no points. All marking tools are disabled. The status line says "Mark points from a browser — this screen cannot show the view's photo for marking." (PL: "Punkty oznaczaj w przeglądarce…") | Mark in a browser, or update to 2.93.0 or later. On 2.93.0 with the Linux native player one tap can add two points: press Undo in the page head (one mark is one undo step). |
-| bug-078, still open in 2.93.0, Linux native player | One tap sometimes adds two points | Press Undo in the page head: one mark is one undo step. |
+| bug-078, native player (station screen) before rw2 2.93.0 | The photo shows no points. All marking tools are disabled. The status line says "Mark points from a browser — this screen cannot show the view's photo for marking." (PL: "Punkty oznaczaj w przeglądarce…") | Mark in a browser, or update to 2.93.0 or later. On the Linux native player one tap can add two points (bug-082 below). |
+| bug-082, Linux native player (station screen) | A tap made while the photo's overlay is still starting sometimes adds two points | Press Undo in the page head: one mark is one undo step. Wait until the points show on the photo before tapping. Fixed in native-player master (aa43e94), not yet in a native-player release. |
 | bug-079, before rw2 2.93.0 | A circle (or any mark) does not appear after the drag. It appears after a page reload | The mark is saved. Reload (F5) and do not mark it again. |
 | bug-080, before rw2 2.93.0 | A new Adaptation block lands at the top of the program, not above the selected block | Move it with the block's ↑ / ↓ to where it belongs. |
 
