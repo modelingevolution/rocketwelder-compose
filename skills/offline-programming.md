@@ -132,8 +132,11 @@ left are in the warning `seams not welded by the program`.
 Run right after step 5 or 6. Do not move the robot or the carriage in between: the plan starts from where they stand.
 No compile step is needed.
 
-1. rocketwelder `run_program` with the `programId`, `dryRun` = false. Leave `fromStart` out. Write down the run id the answer
-   prints as `Run Id`.
+1. rocketwelder `run_program` with the `programId` and the run the person asked for:
+   - `dryRun` = true when the person asks for a dry run: the arm moves the whole program and the torch never fires (no bead is
+     laid). `dryRun` = false when they ask to weld in the twin. They said neither: `dryRun` = false.
+   - `fromStart` = true when the person asks to run from the first block; otherwise leave it out.
+   Write down the run id the answer prints as `Run Id`.
 2. rocketwelder `wait_for_run` with `programId`, `runId`, `timeoutSeconds` = 90.
    If it answers `Still running after 90 s`, call it again with the same arguments, as often as needed.
    A long part takes a long time: one metre of weld at 8 mm/s is about two minutes, plus the moves between seams.
@@ -141,6 +144,9 @@ No compile step is needed.
    the robot is no longer where the program starts.
 
 ## Step 8. Seam verdicts
+
+After a dry run no bead is laid, so there are no seam verdicts: skip this step and say so in the report (the run's outcome is
+the result). After a welded run:
 
 rocketwelder `get_seam_verdicts` with `id` = the `programId` and `runId`. If it answers 202 `pending`, wait two seconds and call again
 (at most five times).
