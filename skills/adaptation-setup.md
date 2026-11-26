@@ -165,7 +165,6 @@ A good setup: the verdict is accepted or auto-accepted, every point is found in 
 corrections match how far the part really moved. Repeat steps 4–6 for a point that is often not found or has a large
 residual. Judging in detail: the skill `adaptation-data-and-analysis`.
 
-
 ## Labels in Polish
 
 The station UI may be in Polish. The labels this skill names:
