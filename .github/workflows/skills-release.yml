@@ -11,22 +11,30 @@ on:
   pull_request:
     paths: ['skills/**']
 
-concurrency:
-  group: ${{ github.event_name == 'push' && 'compose-release' || format('skills-release-dry-run-{0}', github.ref) }}
-  cancel-in-progress: false
-
-permissions:
-  contents: write
-
 jobs:
   release:
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    concurrency:
+      group: compose-release
+      cancel-in-progress: false
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
       - name: Tag a patch release if only skills/ changed
-        env:
-          DRY_RUN_FLAG: ${{ github.event_name != 'push' && '--dry-run' || '' }}
-        run: .github/scripts/skills-release.sh $DRY_RUN_FLAG
+        run: .github/scripts/skills-release.sh
+
+  dry-run:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Would this merge release by itself?
+        run: .github/scripts/skills-release.sh --dry-run

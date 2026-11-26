@@ -68,6 +68,6 @@ flowchart LR
 | No customer names or parts | Generic cell words only. Cell-specific facts stay with that customer, never in a shipped skill. |
 | No shell | The customer has no shell or SSH on the station. A skill sends Claude only to an MCP tool, a REST route reachable through the MCP / station URL, or a UI page the person opens. A missing read is named as a missing MCP tool (`docs/standards/mcp-tools.md`), never worked around. |
 | Never move a real cell | A skill never tells Claude to move a robot on a real cell. |
-| Code is the truth | Every tool, route, setting and page name is copied from the code of the release that serves the skill. |
+| Code is the truth | Every tool, route, setting and page name is copied from the code that will serve the skill: rw2 at the version in `rocketwelder.version` when the skill merges (its git tag `vX.Y.Z`), not rw2 master, and mcp `src/ModelingEvolution.Mcp.RocketWelder` on master for the MCP tools. |
 | Every reference checked | A reviewer checks each tool, route, file and page reference against code before merge. |
 | Not a copy of an epic | Distil how it works and how to do the job; link nothing Claude cannot open from the station. |

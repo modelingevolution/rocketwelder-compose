@@ -23,7 +23,13 @@ say() {
     if [[ -n "${GITHUB_STEP_SUMMARY:-}" ]]; then echo "$*" >> "$GITHUB_STEP_SUMMARY"; fi
 }
 
-git fetch --quiet --force --tags origin
+# A GitHub annotation (error|warning) on the log, the plain sentence in the job summary.
+annotate() {
+    echo "::$1::$2"
+    if [[ -n "${GITHUB_STEP_SUMMARY:-}" ]]; then echo "$2" >> "$GITHUB_STEP_SUMMARY"; fi
+}
+
+git fetch --quiet --force --tags origin master
 
 LATEST=$(git tag --sort=-version:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -1 || true)
 HEAD_SHA=$(git rev-parse HEAD)
@@ -36,16 +42,25 @@ if [[ "$(git rev-parse "$LATEST^{commit}")" == "$HEAD_SHA" ]]; then
     say "HEAD ${HEAD_SHA:0:7} is already released as $LATEST. Nothing to do."
     exit 0
 fi
+if [[ "$DRY_RUN" == false ]] && ! git merge-base --is-ancestor HEAD origin/master; then
+    annotate error "HEAD ${HEAD_SHA:0:7} is not on origin/master. Only master commits are released."
+    exit 1
+fi
 if ! git merge-base --is-ancestor "$LATEST" HEAD; then
     say "HEAD ${HEAD_SHA:0:7} does not contain the latest release $LATEST. Nothing to do."
     exit 0
 fi
 
-CHANGED=$(git diff --name-only "$LATEST" HEAD)
+# --no-renames: a file moved into skills/ counts as a change at its old path too.
+CHANGED=$(git -c core.quotePath=false diff --no-renames --name-only "$LATEST" HEAD)
+if [[ -z "$CHANGED" ]]; then
+    say "HEAD ${HEAD_SHA:0:7} has the same files as $LATEST. Nothing to do."
+    exit 0
+fi
 OTHER=$(grep -v '^skills/' <<< "$CHANGED" || true)
 
 if [[ -n "$OTHER" ]]; then
-    say "Not released: files outside skills/ changed since $LATEST, so a normal release is pending."
+    annotate warning "Not released: files outside skills/ changed since $LATEST, so a normal release is pending."
     say "The skills ship with that release (release.sh). Files outside skills/:"
     say ""
     while IFS= read -r f; do say "- \`$f\`"; done <<< "$OTHER"
@@ -57,7 +72,7 @@ TAG="v$MAJOR.$MINOR.$((PATCH + 1))"
 
 if git rev-parse -q --verify "refs/tags/$TAG" > /dev/null \
    || [[ -n "$(git ls-remote --tags origin "refs/tags/$TAG")" ]]; then
-    say "::error::Tag $TAG already exists on origin (another release was cut meanwhile). Not tagging."
+    annotate error "Tag $TAG already exists on origin (another release was cut meanwhile). Not tagging."
     exit 1
 fi
 
@@ -73,7 +88,7 @@ fi
 
 git tag "$TAG" "$HEAD_SHA"
 if ! git push origin "refs/tags/$TAG"; then
-    say "::error::Pushing $TAG failed (it may have been created meanwhile). Not released."
+    annotate error "Pushing $TAG failed (it may have been created meanwhile). Not released."
     exit 1
 fi
 say "Released $TAG on ${HEAD_SHA:0:7}. Stations get it through the AutoUpdater."
