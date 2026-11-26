@@ -111,8 +111,8 @@ asks. It applies to calibration photos only, station-wide.
 
 - **The camera position** goes stale after a new lens or new joint offsets. The card says "calibrate again: …".
 - **Adaptation views** taken under an older calibration: the `get_views` column `Stale` is true when the camera or lens
-  changed. It does not show a change of the joint offsets alone. When the program opens, the page asks "The calibration has changed": since these views were taken, was the camera moved or
-  re-mounted?
+  changed. It does not show a change of the joint offsets alone. When the program opens, the page asks "The calibration
+  has changed": since these views were taken, was the camera moved or re-mounted?
 
 | Answer | What it does |
 |---|---|
