@@ -126,7 +126,9 @@ moves the arm.
 
 `Stale` true in `get_views` means the camera was recalibrated after the view was taken. The page says "Recapture
 this view first — the camera was recalibrated". The person presses Move joint, then Re-capture, and marks again.
-`Stale` covers the camera calibration only: a view taken under other joint offsets still reads `Stale` false.
+`Stale` covers the camera calibration only: a view taken under other joint offsets still reads `Stale` false, yet the
+run refuses to start for it ("Refusing to run: the views were taken before the calibration changed: …"). The remedy is
+the same: Move joint, then Re-capture.
 
 ## Step 6. The correction of each point
 
@@ -166,12 +168,10 @@ the reason, every view's photo with the points, and a row per point.
 
 ## Step 9. Judge the result
 
-`get_adaptation_result` with `programId` and `runId` reads what the run did, from its dataset:
+`get_adaptation_result` reads what the run did, from its dataset. Besides the per-axis correction and the verdict (step 8):
 
-- per axis X/Y/Z: `Corrected` with its mm, or `NotCorrected` / `Unknown`
 - per anchor: view, point, what it wrote (mm) and its residual (mm)
 - per point: taught and solved position
-- the verdict: accepted, auto-accepted, rejected, unwatched, readapt or blocked, with its reasons
 
 A good setup: the verdict is accepted or auto-accepted, every point is found in every view that marks it, and the
 corrections match how far the part really moved. Repeat steps 4–6 for a point that is often not found or has a large
@@ -200,8 +200,8 @@ The station UI may be in Polish. The labels this skill names:
 
 | Fault | What the person sees | What to do |
 |---|---|---|
-| bug-078, native player (station screen) before rw2 2.93.0 | The photo shows no points. All marking tools are disabled. The status line says "Mark points from a browser — this screen cannot show the view's photo for marking." (PL: "Punkty oznaczaj w przeglądarce…") | Mark in a browser, or update to 2.93.0 or later. On the Linux native player one tap can add two points (bug-082 below). |
-| bug-082, Linux native player (station screen) | A tap made while the photo's overlay is still starting sometimes adds two points | Press Undo in the page head: one mark is one undo step. Wait until the points show on the photo before tapping. Fixed in native-player master (aa43e94), not yet in a native-player release. |
+| bug-078, native player (station screen) before rw2 2.93.0 | The photo shows no points. All marking tools are disabled. The status line says "Mark points from a browser — this screen cannot show the view's photo for marking." (PL: "Punkty oznaczaj w przeglądarce…") | Mark in a browser, or update to 2.93.0 or later. |
+| bug-082, Linux native player (station screen) up to v1.3.1 | One tap on the photo sometimes adds two points (the tap came while the photo's overlay was still starting) | Press Undo in the page head (one mark is one undo step), or delete the extra point. Fixed on native-player master, in the next native-player release. |
 | bug-079, before rw2 2.93.0 | A circle (or any mark) does not appear after the drag. It appears after a page reload | The mark is saved. Reload (F5) and do not mark it again. |
 | bug-080, before rw2 2.93.0 | A new Adaptation block lands at the top of the program, not above the selected block | Move it with the block's ↑ / ↓ to where it belongs. |
 
