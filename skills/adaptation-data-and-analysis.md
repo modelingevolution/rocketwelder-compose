@@ -6,7 +6,8 @@ triggers: [adaptation result, adaptation data, adaptation dataset, is the correc
 # Adaptation data and analysis
 
 How a view, a mark and a correction are set up is in the skill `adaptation-setup` (`load_skill`). This skill reads and judges
-what is already there. Every tool here is a read. You never move the robot.
+what is already there. Every tool here is a read. You never move the robot, and never pass `confirmRealRobot`, on any
+tool: the station's name in it lets a move through on a `Real` station.
 
 ## The data
 
