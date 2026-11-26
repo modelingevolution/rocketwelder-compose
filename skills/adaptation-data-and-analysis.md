@@ -12,32 +12,29 @@ person does that on the adaptation page (see `adaptation-setup`).
 
 ## Answers to tell the person whole
 
-Tell each of these whole, even before you have a run id. Then read the run (`get_adaptation_result`) and fill in its
-numbers.
+Tell each of these whole, even before you have a run id. Then read the run and fill in its numbers: `get_adaptation_result`
+for the result, `get_block_values` for the band, `get_view_overlay` and `get_view_projection` for a view.
 
 **"Was the correction good?"** It is good when all of these hold:
 
-> 1. The verdict is `auto-accepted` or `accepted`, and its reason (if any) is understood.
+> 1. The verdict is accepted or auto-accepted, and its reason (if any) is understood.
 > 2. Every point marked in a view is found in that view: no NOT FOUND on the run page.
-> 3. `settled` is true.
-> 4. Per axis X/Y/Z: `Corrected` with its mm, or `NotCorrected` / `Unknown`, which are never a measured 0. The corrected
->    mm match how far, and in which direction, the part really lies from where it was taught.
-> 5. On each view overlay (`get_view_overlay`) the green cross sits on the feature, close to its blue ring.
-> 6. The weld lands on the seam. Only the person can see this.
+> 3. The solve settled.
+> 4. Per axis X/Y/Z the correction is Corrected with its mm, or NotCorrected / Unknown, which never mean a measured 0. The
+>    corrected mm match how far, and in which direction, the part really lies from where it was taught.
+> 5. On each view's photo the mark (green cross) sits on the feature, close to the taught point (blue ring).
+> 6. The weld lands on the seam. Only you can see this.
 
 **"It blocked: the part sits 12 mm from the taught position"** (reason `tolerance_band`):
 
-> The offset is above the block's band (`offsetTolerance`, `10:10` built in: below 10 mm accepted, exactly 10 reviewed,
-> above 10 blocked). That block stops; blocks before it may already have welded. If the part really moved, re-seat it and
-> adapt again. To weld at that offset, the person raises the band in the program editor; that change is recorded with the
-> program. `get_block_values` shows the band and where it comes from.
+> The offset is above the block's band (built in `10:10`: below 10 mm accepted, exactly 10 reviewed, above 10 blocked).
+> That block stops; blocks before it may already have welded. If the part really moved, re-seat it and adapt again. To
+> weld at that offset, raise the band in the program editor; that change is recorded with the program.
 
 **"A point is NOT FOUND in view 2"** (reason `point_not_found`):
 
-> Look at view 2 on the run page and with `get_view_overlay`: the green cross (the mark) against the blue ring (the taught
-> point projected). Check the lighting, the mark, and that the part is in the frame. If `get_views` shows view 2 `Stale`
-> (taken under an older camera calibration), the person re-captures it (`adaptation-setup`: Move joint, then Re-capture)
-> and marks the point again.
+> Look at view 2 on the run page and on its photo with the marks: the mark (green cross) against the taught point (blue
+> ring). Check the lighting, the mark itself, and that the part is in the camera's frame.
 
 ## The data
 
