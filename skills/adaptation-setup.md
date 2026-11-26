@@ -39,7 +39,8 @@ program's points to match. It lives in an **Adaptation block** in the program.
 2. UI: the program editor, `/teach/program/<program id>`. No Adaptation block yet: the person adds one from the block
    toolbox. In rw2 2.93.0 and later it goes directly above the selected block. With nothing selected, the first one goes to the start
    of the program, after any Touch sense.
-3. The person opens the adaptation page with **Set up adaptation** (no views yet) or **Open adaptation**. The page title is
+3. The person opens the adaptation page with **Set up adaptation** (no views yet) or **Open adaptation**. Its address is
+   `/teach/program/<program id>/adaptation/<block id>` (with `/views/<view id>` when a view is selected). The page title is
    "Adaptation — <program> · <n> views". Top left is the **Views** list, the picture is in the middle, and the toolbar is
    above the picture.
 
