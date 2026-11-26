@@ -28,13 +28,20 @@ All three are offered on the station AutoUpdater's Apps page.
 ## How it connects
 
 - **Address:** the Neuron's base url `http://<IP>:<port>`, the port included. Windows and Android refuse https and a path.
-  Windows: the start screen or Settings → Neurons. Linux: `KIOSK_URL` in `/etc/native-player/kiosk.conf` (default
-  `http://localhost/auto-preview`, the station's own screen). Android: settings sheet, "Neuron base URL".
+  Windows: the start screen or Settings → Neurons. Android: settings sheet, "Neuron base URL". Linux kiosk: `KIOSK_URL` in
+  `/etc/native-player/kiosk.conf` (default `http://localhost/auto-preview`, the station's own screen); changing it needs a
+  shell on that device (`sudo kiosk-config --url …`), so it is the installer's job, not yours.
 - **Start-up:** the Player waits for the Neuron's `/health` before it opens the page. Windows shows `Waiting for the Neuron …`;
   Linux shows a spinner, then `Waiting for server...` after 30 s.
-- **Video:** RTP/JPEG over UDP with forward error correction. The Player registers with the Neuron from one UDP socket, so no
-  inbound firewall rule is needed. If no RTP packet arrives within 5 s, it plays MJPEG over HTTP instead. On the station's own
-  screen it can read the video from shared memory.
+- **Video**, per host:
+
+  | Host | Plays |
+  |---|---|
+  | Windows, Linux | RTP/JPEG over UDP with forward error correction; MJPEG over HTTP if no RTP packet arrives within 5 s |
+  | Linux on the Neuron itself | also shared memory |
+  | Android | MJPEG over HTTP only |
+
+  For RTP the Player registers with the Neuron from one UDP socket, so no inbound firewall rule is needed.
 - Linux: Ctrl+Shift+V shows on each video the protocol now playing (`shm`, `rtp`, `mjpeg`; `mjpeg` after a fallback), the
   resolution and the fps.
 
@@ -42,7 +49,7 @@ All three are offered on the station AutoUpdater's Apps page.
 
 | Host | Where |
 |---|---|
-| Windows | Esc (or the edge swipe) opens Settings → About: `Version x.y.z (build)` |
+| Windows | Esc (or the edge swipe) opens Settings → About: `Version x.y.z (build)` (Polish: Ustawienia → O aplikacji, `Wersja x.y.z (build)`) |
 | Linux kiosk | the installed `native-player` package version (the person who set up the device reads it) |
 | Android | the Android app info |
 
@@ -52,7 +59,8 @@ Latest release: **v1.3.1**. Fixes merged after it are on native-player master on
 
 Debug runs only when the Player is started with `--debug`. It listens on 127.0.0.1 only, so it is read on the Player's own
 computer. Windows: `RocketWelderPlayer.exe --debug [--neuron http://host:port] [--debug-port 9222] [--debug-http-port 9223]`;
-Settings → Debugging then shows `On` and both ports. The Linux kiosk starts without `--debug`.
+Settings → Debugging (Debugowanie) then shows `On` and both ports. The Linux kiosk starts without `--debug`. Android: with
+diagnostics on, npdebug is at 127.0.0.1:9223 on the tablet, reached from a computer with `adb forward tcp:9223 tcp:9223`.
 
 | Port (default) | What |
 |---|---|
@@ -78,8 +86,8 @@ Reading `/v1/players` taken a few seconds apart:
 
 | Host | Log |
 |---|---|
-| Windows | `%LOCALAPPDATA%\RocketWelderPlayer\logs\client.log`; the run before is `client.log.1` |
-| Linux kiosk | no log file; with `--debug`, `GET /v1/log` |
+| Windows (only host with a log file) | `%LOCALAPPDATA%\RocketWelderPlayer\logs\client.log` on the PC that shows the Player, never the Neuron; the run before is `client.log.1`. Claude Code on that PC reads it itself; with Claude Desktop the person opens it |
+| Linux | no log file (stderr only); with `--debug`, `GET /v1/log` |
 | Android | logcat, tag `NPKIOSK` |
 
 ## Known faults
