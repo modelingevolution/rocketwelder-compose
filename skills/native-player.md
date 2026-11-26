@@ -94,7 +94,7 @@ Reading `/v1/players` taken a few seconds apart:
 
 | Symptom | Host | Cause | Fixed in |
 |---|---|---|---|
-| The overlay disappears, comes back by itself (often while jogging); `client.log` has `overlay_cost_refused … cost=… limit=…` | all | bug-077: a frame whose estimated draw cost passed a limit was drawn empty | native-player master; **not in a release** (v1.3.1 and older have it) |
+| The overlay disappears, comes back by itself (often while jogging); the log (see Logs) has `overlay_cost_refused … cost=… limit=…` | all | bug-077: a frame whose estimated draw cost passed a limit was drawn empty | native-player master; **not in a release** (v1.3.1 and older have it) |
 | Adaptation photo shows no points, all marking tools disabled | Windows, Linux | bug-078: the photo overlay was not mounted in the Player | rw2 **2.93.0** (`<url>/version`) |
 | A circle mark appears only after a refresh | all | bug-079 | rw2 **2.93.0** |
 | One tap on the adaptation photo writes two points, mostly in the first seconds after the view opens | Linux | bug-082: WebKitGTK clicked a tap the page had already handled | native-player master; **not in a release**. Until then the person deletes the extra point in the view |
