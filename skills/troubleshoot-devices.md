@@ -38,11 +38,11 @@ frame 1. A refused move carries the controller's number only: `(error N)`; a ref
 |---|---|---|---|
 | `MovePtp: MoveJ rejected for {…} (error 14)` | `get_program_status` → `Last Error`; `get_robot_pose`, `get_robot_joints` | 14 = `ERR_EXECUTION_FAILED`. The joints were solved, so the controller itself refused the command: a standing fault, the controller's mode, or the arm not enabled | The person checks the pendant for a standing alarm, the controller's mode and that the arm is enabled, and clears it there before the next run. Still 14: send us the `Last Error`, the time, the pendant's alarm text |
 | `MovePtp: inverse kinematics failed for {…} (error N)` | the same | The controller found no joints for that pose | Send us the pose from the message and the point's name |
-| `MoveJ rejected … (error 154)` | the person opens `<url>/api/robots/default/tool-frame`: `ToolId` (the tool rw2 commands), `ActiveTool` (the tool the controller uses) | 154 = motion planning failed: the joints and the pose sent with them do not match. Found this week: the tool frame or the workpiece (user) frame on the controller is not the one rw2 commands | `ToolId` ≠ `ActiveTool`: the person opens Devices → Calibrate TCP and presses Select. Same tool: ask which workpiece frame is active on the pendant and what it holds (rw2 moves in frame 1); send us both frames and the `Last Error` |
+| `MoveJ rejected … (error 154)` | the person opens `<url>/api/robots/default/tool-frame`: `ToolId` (the tool rw2 commands), `ActiveTool` (the tool the controller uses) | 154 = motion planning failed: the joints and the pose sent with them do not match. The tool frame or the workpiece (user) frame active on the controller is not the one rw2 commands | `ToolId` ≠ `ActiveTool`: the person opens Devices → Calibrate TCP and presses Select. Same tool: ask which workpiece frame is active on the pendant and what it holds (rw2 moves in frame 1); send us both frames and the `Last Error` |
 | `Refusing to move: <robot>: tool T with record R is selected but the controller is using tool N …` | `<url>/api/robots/default/tool-frame` | The tool selected in rw2 is not the controller's active tool | The person opens Calibrate TCP on the Devices page and presses Select |
 | `… controller code 99 …` / jog refused, safety | the pendant | A safety stop (SI0/SI1) is active: guard, emergency stop, a person in the cell | The person clears the safety circuit. Nothing is wrong with the drive |
 | `controller fault 1/89 — Peripheral (UDP) communication abnormal — link to the PLC is down` / an external-axis call `refused with controller code 14` | Devices page, the robot's jog panel | The controller's UDP link to the track PLC is down. rw2 runs `ExtDevUDPClientComReset` by itself | Still standing: the person checks the PLC and its cable; the controller's web console alarm offers "Restaurer la connexion" (restore the link) |
-| Program screen and overlay freeze while the arm moves, video fine | `<url>/version` | bug-074: a tool-frame read (`GetTCPOffset`) was answered only after the move ended | Fixed from rw2 **2.93.0**. Older: tell the person it is known, fixed by the update |
+| Program screen and overlay freeze or update once per move while the arm moves, video fine | `<url>/version` | bug-074: a tool-frame read (`GetTCPOffset`) was answered only after the move ended | Fixed from rw2 **2.93.0**. Older: tell the person it is known, fixed by the update |
 | The arm keeps moving after STOP | — | The controller refused the stop | The person uses the physical emergency stop now. Then send us the time |
 | `get_robot_pose` says "Robot is disconnected" | `list_devices` | rw2 has no session with the controller | The person checks the controller is on and reachable; Devices page → the robot's Connect |
 
@@ -51,11 +51,11 @@ The controller's fault code (main/sub) is shown only in the robot's jog panel an
 ## Megmeet welder
 
 rw2 talks to the welder over EtherNet/IP through the Megmeet plugin. The welder's fault code and its latch are shown on the
-welder's panel, row "Power source". The plugin clears Err27 and Err28 by itself; every other code waits for the person.
+welder's panel, row "Power source".
 
 | Symptom | Read | Known cause | What to do |
 |---|---|---|---|
-| Panel shows `fault, code 7` (Err7) | the welder's panel `<url>/welders/{id}` (phone: `<url>/mobile/welder/{device}/panel`); `<url>/plugins` → the Megmeet plugin's installed version | Seen at a station: a run whose arc never struck, then STOP, left the arc command (E01) on for 74 minutes and the welder latched Err7. Fixed in Megmeet plugin **1.2.1** | The person clears it on the welder or presses "Reset fault" on the panel (shown while the fault is latched). Plugin older than 1.2.1: they update it on `/plugins`. Err7 after 1.2.1: send us the time, the run and the plugin version |
+| Panel shows `fault, code 7` (Err7) | the welder's panel `<url>/welders/{id}` (phone: `<url>/mobile/welder/{device}/panel`); `<url>/plugins` → the Megmeet plugin's installed version | A run whose arc never struck, then STOP: the arc command (E01) stayed on and the welder latched Err7. Fixed in Megmeet plugin **1.2.1** | The person clears it on the welder or presses "Reset fault" on the panel (shown while the fault is latched). Plugin older than 1.2.1: they update it on `/plugins`. Err7 after 1.2.1: send us the time, the run and the plugin version |
 | `Err27 — external communication disconnected`, `Err28 — external communication abnormal` | the panel | The link to the robot side dropped | Cleared by the plugin after it reconnects. Repeating: check the network cable |
 | `Err30 — given setting out of range` | the panel; the program's weld values (`get_block_values`) | A value sent to the welder is outside what it accepts | Read the block's weld values; change them only if the person asks |
 | `Err31 — robot host not ready (E02)` | the panel | The welder waits for the robot-ready signal | Send us the time and the panel |
@@ -73,7 +73,7 @@ A camera's video runs in a GStreamer pipeline. States: `Stopped`, `Starting`, `R
 |---|---|---|---|
 | No video | `list_pipelines`, `get_pipeline_status`; `get_camera_frame` | The pipeline is not `Running` | With the person's yes: `start_pipeline`. `Failed`: the person opens `<url>/pipelines` and hovers the state for the error |
 | `Cannot start: pipeline '…' is already using this Basler camera … Stop it first.` | `list_pipelines` | Two pipelines on one camera | Stop the other one (with the person's yes), then start |
-| Pipeline stays `Starting` for 2 minutes, then `Failed` ("was not ready") | the pipeline in the designer (`<url>/pipeline/{id}`) | bug-084: `zerofilter` with `passthrough` marked configured hangs at launch | The person unticks `passthrough`'s "configured" in the pipeline editor |
+| Pipeline stays `Starting` for 2 minutes, then `Failed` | the pipeline in the designer (`<url>/pipeline/{id}`) | bug-084: `zerofilter` with `passthrough` marked configured hangs at launch | The person unticks `passthrough`'s "configured" in the pipeline editor |
 | A pipeline with a processing container fails after 30 s ("hasn't created the buffer in 00:00:30") | — | bug-083: the container gets a fixed 30 s to start | Known, not fixed. Send us the pipeline name and time |
 | `get_camera_frame` → "Camera frame is unavailable." | `list_pipelines` | The camera's pipeline is not running | As "No video" |
 | Red bar, page stops working, on STOP or when leaving the program editor | `<url>/version` | bug-075 / bug-081 | Fixed from rw2 **2.93.0**. Reload the page |
@@ -86,7 +86,6 @@ about 10 times a second.
 | Symptom | Read | Known cause | What to do |
 |---|---|---|---|
 | Overlay gone in the Player, comes back by itself (often while jogging) | Player log `%LOCALAPPDATA%\RocketWelderPlayer\logs\client.log`: lines `overlay_cost_refused … cost=… limit=…` | bug-077: the Player hid a frame whose estimated draw cost passed a limit. Fixed on native-player master, **not in a release** (v1.3.1 has the limit) | Tell the person it is known; the fix comes with the next Player release |
-| Overlay slow (one update per move) while the arm moves | `<url>/version` | bug-074 (Fairino section) | Fixed from rw2 **2.93.0** |
 | Points in the wrong place on the live picture | `get_live_overlay` / `get_live_projection` with the `id` of the program (rw2 2.93.0 on) | Calibration or adaptation in force | `list_skills`: load the calibration or adaptation skill if the station has one |
 
 Player started with `--debug` (default `--debug-http-port 9223`): on that computer `http://127.0.0.1:9223/v1/players` shows per
@@ -119,7 +118,7 @@ read `<axis>: <error>: <what>. Read <register> (<address>) = <value>`.
 
 Reset clears the fault and leaves ErrorStop; it is refused while the link to the PLC is down.
 
-A track attached to the Fairino controller (not a PLC on Modbus) answers with the robot's codes: see "controller fault 1/89" above.
+A track driven by the Fairino controller (not by a PLC on Modbus) reports through the Fairino rows: fault 1/89, code 14.
 
 ## Modbus devices
 
