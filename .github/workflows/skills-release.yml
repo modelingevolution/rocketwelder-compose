@@ -1,0 +1,32 @@
+# A merged edit under skills/ becomes a compose release with no manual step.
+# Tags only when every file changed since the latest release tag is under skills/
+# (see .github/scripts/skills-release.sh). Pull requests run the same decision as a dry run,
+# so the PR shows whether its merge will release by itself.
+name: Skills release
+
+on:
+  push:
+    branches: [master]
+    paths: ['skills/**']
+  pull_request:
+    paths: ['skills/**']
+
+concurrency:
+  group: ${{ github.event_name == 'push' && 'compose-release' || format('skills-release-dry-run-{0}', github.ref) }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Tag a patch release if only skills/ changed
+        env:
+          DRY_RUN_FLAG: ${{ github.event_name != 'push' && '--dry-run' || '' }}
+        run: .github/scripts/skills-release.sh $DRY_RUN_FLAG

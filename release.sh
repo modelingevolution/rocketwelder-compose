@@ -297,6 +297,10 @@ main() {
         esac
     done
     
+    # Tags are also cut by CI (.github/workflows/skills-release.yml) and by other sessions: read origin's tags
+    # before choosing a version, so a local clone never picks a version that already exists.
+    git fetch --quiet --tags origin || { print_error "git fetch --tags origin failed"; exit 1; }
+
     # If no version specified, use rocketwelder version or auto-increment
     if [[ -z "$version" ]]; then
         if [[ "$auto_increment_requested" == true ]]; then
