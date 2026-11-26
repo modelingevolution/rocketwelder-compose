@@ -127,6 +127,8 @@ wrong. Re-taking a view: skill `adaptation-setup`.
 
 ## What to send us
 
+Collect these and give them to the person as one message to send to their RocketWelder contact:
+
 1. The rw2 version: the person opens `<station address>/version`.
 2. The camera name, and the text answers of `get_camera_calibration`, `list_calibration_records` and `list_calibration_runs`.
 3. For the run in question: its run id (`cs-…`) and `get_calibration_record` for the revision it saved.
