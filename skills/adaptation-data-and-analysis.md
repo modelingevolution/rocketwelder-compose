@@ -7,8 +7,8 @@ triggers: [adaptation result, adaptation data, adaptation dataset, is the correc
 
 How a view, a mark and a correction are set up is in the skill `adaptation-setup` (`load_skill`). This skill reads and judges
 what is already there. Every tool here is a read. You never move the robot, and never pass `confirmRealRobot`, on any
-tool: the station's name in it lets a move through on a `Real` station. You never capture, add or re-take views, and
-never mark points: the person does that on the adaptation page (`adaptation-setup`).
+tool: the station's name in it lets a move through on a `Real` station. No tool captures a view or marks a point: the
+person does that on the adaptation page (see `adaptation-setup`).
 
 ## Was the correction good?
 
@@ -99,7 +99,7 @@ Read the reason's sentence to the person: it names the points and numbers. The m
 | Code | Meaning | What to look at |
 |---|---|---|
 | `tolerance_band` | the offset or bend is in the review or block zone | the measured mm against the band. A real move of the part: re-seat it and adapt again. To weld at that offset, the person raises the band (`offsetTolerance` or `pathTolerance`) in the program editor; that change is recorded with the program. A blocked block stops; blocks before it may already have welded |
-| `point_not_found` | a point was not found in the views that mark it | the run page's adaptation row (NOT FOUND) and `get_view_overlay`: lighting, the mark, the part in the frame. A view with `Stale` true: the person re-captures it (`adaptation-setup`: Move joint, then Re-capture) and marks again |
+| `point_not_found` | a point was not found in the views that mark it | the run page's adaptation row (NOT FOUND) and `get_view_overlay`: lighting, the mark, the part in the frame |
 | `not_located` | a group of anchors located nothing | the same as `point_not_found`, for the whole group |
 | `no_fixpoint` | the passes did not settle within 5 | the anchors with the largest residuals |
 | `anchors_too_close` | a group's anchors are less than 10 mm apart in the direction that shows a turn (`AnchorCorrection:MinAnchorBaselineMm`): the group slides by the mean, with no turn | the anchors' positions. Anchors further apart give a turn |
@@ -108,6 +108,10 @@ Read the reason's sentence to the person: it names the points and numbers. The m
 | `found_ray_shallow` | the camera's ray meets the point's plane at less than 15° (`AnchorCorrection:MinRayToPlaneDeg`) | the view's angle to that face: a view looking more squarely at the face |
 
 Other codes have their sentence. Read it as written.
+
+A run that refuses to start with "Refusing to run: the views were taken before the calibration changed: …" names
+views taken under an older calibration or other joint offsets (`Stale` true in `get_views` for a camera change). The
+person re-captures each one (`adaptation-setup`: Move joint, then Re-capture) and marks it again.
 
 ## What to send us when the correction is not good
 
