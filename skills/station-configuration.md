@@ -16,20 +16,24 @@ Claude never changes a setting the person did not ask for and never passes `conf
 
 ## Where each setting lives
 
-| Setting | Station page (menu Settings → …) | Claude reads | Claude changes | Saved in |
+| Setting | Page: EN / PL menu name (route) | Claude reads | Claude changes | Saved in |
 |---|---|---|---|---|
-| Station programming defaults | Initial settings (`/programming-defaults`) | `get_station_defaults` | `set_station_default`, `clear_station_default` | the station's runtime configuration |
-| A program's defaults | the program editor, gear button Initial settings | `get_program_defaults` | `set_program_default`, `reset_program_defaults` | the program |
-| Calibration photo timing | Calibration photos (`/settings/calibration-photos`) | `get_calibration_photo_timing` | `set_calibration_photo_timing` | the station's runtime configuration |
-| Devices (robot, welder, camera, distance sensor, Modbus, axis) | Devices (`/devices`) | `list_devices` (name, type, connected) | — | the station's event store |
-| Video pipelines | Pipelines (`/pipelines`, top level of the menu) | `list_pipelines`, `get_pipeline_status` | `start_pipeline`, `stop_pipeline` | the station's event store |
-| Commissioning, markers, calibrations | Commissioning (`/commissioning`) | the calibration and commissioning tools | — | the station's event store |
-| Language | Language (`/settings/language`) | — | — | the station's runtime configuration |
-| Plugins | Plugins (`/plugins`) | — | — | the station's runtime configuration |
-| Portal registration | Integrations (`/integration`) | — | — | the station's runtime configuration |
-| Claude settings | Claude Code (`/settings/claude-code`) | — | — | the station |
-| Licence | Licence (`/settings/license`) | — | — | the station's runtime configuration |
+| Station programming defaults | Settings → Initial settings / Ustawienia → Ustawienia początkowe (`/programming-defaults`) | `get_station_defaults` | `set_station_default`, `clear_station_default` | the station's runtime configuration |
+| A program's defaults | the program editor, gear button Initial settings / Ustawienia początkowe | `get_program_defaults` | `set_program_default`, `reset_program_defaults` | the program |
+| Calibration photo timing | Calibration photos / Zdjęcia kalibracyjne (`/settings/calibration-photos`) | `get_calibration_photo_timing` | `set_calibration_photo_timing` | the station's runtime configuration |
+| Devices (robot, welder, camera, distance sensor, Modbus, axis) | Devices / Urządzenia (`/devices`) | `list_devices` (name, type, connected) | — | the station's event store |
+| Video pipelines | Pipelines / Potoki (`/pipelines`, top level of the menu) | `list_pipelines`, `get_pipeline_status` | `start_pipeline`, `stop_pipeline` | the station's event store |
+| Commissioning, markers, calibrations | Commissioning / Uruchomienie (`/commissioning`) | the calibration and commissioning tools | — | the station's event store |
+| Live signal scope and PID tuning | Signal Processing / Przetw. sygnału (`/signal-processing`) | — | — | — |
+| Language | Language / Język (`/settings/language`) | — | — | the station's runtime configuration |
+| Plugins | Plugins / Wtyczki (`/plugins`) | — | — | the station's runtime configuration |
+| Portal registration | Integrations / Integracje (`/integration`) | — | — | the station's runtime configuration |
+| Claude settings | Claude Code (`/settings/claude-code`) | — | — | not stated here |
+| Licence | Licence / Licencja (`/settings/license`) | — | — | the station's runtime configuration |
 | Server options (paths, ports, connections) | System (`/settings/system`), read only | — | — | configuration files |
+
+All pages except Pipelines are in the Settings / Ustawienia group of the left menu. A station can hide menu entries, and Licence
+shows only in some licence states; the route opens the page in either case, in both languages.
 
 The station's pages have no login: whoever opens the station address can change what a page changes.
 
@@ -83,4 +87,4 @@ Ask RocketWelder for these. Say the setting, the value wanted and why.
 
 | Tool | Effect | Endpoint | Owner |
 |---|---|---|---|
-| `get_device_configuration` | read | rw2 `GET /api/peripheral-devices/{id}` (a device's properties and health), marked `.ForAgents("get_device_configuration", ToolEffect.Read)` | rw2 |
+| `list_device_configurations` | read | rw2 `GET /api/peripheral-devices` (every device with its properties and health, no parameters), marked `.ForAgents("list_device_configurations", ToolEffect.Read)` | rw2 |
