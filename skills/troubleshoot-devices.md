@@ -22,7 +22,8 @@ at the station url (`list_stations` shows it as `url`). There is no shell on the
 ## First reads (every device)
 
 1. `list_stations` → the selected station, its `kind` and `url`.
-2. The rw2 version: `get_station_version` when your tool list has it, else the person opens `<url>/version` (`{version, gitSha}`). Several faults below are fixed only from a version on.
+2. The rw2 version: `get_station_version` when your tool list has it, else the person opens `<url>/version`
+   (`{version, gitSha}`). Several faults below are fixed only from a version on.
 3. `list_devices` → each device's name, interface and `Connected`.
 4. The person opens `<url>/devices`: the Status column shows each device's state (for a PLC: `Online`, `Unreachable`,
    `Connecting...`, `Connection failed`).
