@@ -134,9 +134,8 @@ No compile step is needed.
 
 1. rocketwelder `run_program` with the `programId`, `dryRun` = false. Leave `fromStart` out. Write down the run id the answer
    prints as `Run Id`.
-2. rocketwelder `wait_for_run` with `programId`, `runId`, `timeoutSeconds` = 600.
-   If it answers `Still running after 600 s`, call it again with the same arguments, as often as needed. If the call itself
-   fails with a timeout, use `timeoutSeconds` = 90 from then on.
+2. rocketwelder `wait_for_run` with `programId`, `runId`, `timeoutSeconds` = 90.
+   If it answers `Still running after 90 s`, call it again with the same arguments, as often as needed.
    A long part takes a long time: one metre of weld at 8 mm/s is about two minutes, plus the moves between seams.
    If the run ends `Failed` or `Cancelled`, report the block it stopped at and its message, and stop. Do not start another run:
    the robot is no longer where the program starts.
