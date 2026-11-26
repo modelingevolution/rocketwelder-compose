@@ -10,7 +10,8 @@ at the station url (`list_stations` shows it as `url`). There is no shell on the
 
 ## Rules
 
-- Never move the robot, an axis or the welder, and never start a program on a `Real` station (`list_stations` → `kind`).
+- Never move the robot, an axis or the welder, and never start a program on a `Real` station (`list_stations` → `kind`). Never
+  pass `confirmRealRobot`.
 - Never change a device setting, a tool frame, a pipeline or a plugin unless the person asks for that exact change. Starting or
   stopping a pipeline is a change: ask first.
 - "Reset", "Home", "Enable", "Reset fault" and "Reset all errors" are pressed by the person at the station, never by you.
@@ -21,7 +22,7 @@ at the station url (`list_stations` shows it as `url`). There is no shell on the
 ## First reads (every device)
 
 1. `list_stations` → the selected station, its `kind` and `url`.
-2. The rw2 version: the person opens `<url>/version` (`{version, gitSha}`). Several faults below are fixed only from a version on.
+2. The rw2 version: `get_station_version` when your tool list has it, else the person opens `<url>/version` (`{version, gitSha}`). Several faults below are fixed only from a version on.
 3. `list_devices` → each device's name, interface and `Connected`.
 4. The person opens `<url>/devices`: the Status column shows each device's state (for a PLC: `Online`, `Unreachable`,
    `Connecting...`, `Connection failed`).
@@ -36,9 +37,9 @@ frame 1. A refused move carries the controller's number only: `(error N)`; a ref
 
 | Symptom | Read | Known cause | What to do |
 |---|---|---|---|
-| `MovePtp: MoveJ rejected for {…} (error 14)` | `get_program_status` → `Last Error`; `get_robot_pose`, `get_robot_joints` | 14 = `ERR_EXECUTION_FAILED`. The joints were solved, so the controller itself refused the command: a standing fault, the controller's mode, or the arm not enabled | The person checks the pendant for a standing alarm, the controller's mode and that the arm is enabled, and clears it there before the next run. Still 14: send us the `Last Error`, the time, the pendant's alarm text |
+| `MovePtp: MoveJ rejected for {…} (error 14)` | `get_program_status` → `Last Error`; `get_robot_pose`, `get_robot_joints` | 14 = `ERR_EXECUTION_FAILED`. The joints were solved, so the controller itself refused the command. Likely: a standing fault, the controller's mode, or the arm not enabled | The person checks the pendant for a standing alarm, the controller's mode and that the arm is enabled, and clears it there before the next run. Still 14: send us the `Last Error`, the time, the pendant's alarm text |
 | `MovePtp: inverse kinematics failed for {…} (error N)` | the same | The controller found no joints for that pose | Send us the pose from the message and the point's name |
-| `MoveJ rejected … (error 154)` | the person opens `<url>/api/robots/default/tool-frame`: `ToolId` (the tool rw2 commands), `ActiveTool` (the tool the controller uses) | 154 = motion planning failed: the joints and the pose sent with them do not match. The tool frame or the workpiece (user) frame active on the controller is not the one rw2 commands | `ToolId` ≠ `ActiveTool`: the person opens Devices → Calibrate TCP and presses Select. Same tool: ask which workpiece frame is active on the pendant and what it holds (rw2 moves in frame 1); send us both frames and the `Last Error` |
+| `MoveJ rejected … (error 154)` | the person opens `<url>/api/robots/default/tool-frame`: `ToolId` (the tool rw2 commands), `ActiveTool` (the tool the controller uses) | 154 = motion planning failed: the joints and the pose sent with them do not match. Likely cause (no recorded case): the tool frame or the workpiece (user) frame active on the controller is not the one rw2 commands | `ToolId` ≠ `ActiveTool`: the person opens Devices → Calibrate TCP and presses Select. Same tool: ask which workpiece frame is active on the pendant and what it holds (rw2 moves in frame 1); send us both frames and the `Last Error` |
 | `Refusing to move: <robot>: tool T with record R is selected but the controller is using tool N …` | `<url>/api/robots/default/tool-frame` | The tool selected in rw2 is not the controller's active tool | The person opens Calibrate TCP on the Devices page and presses Select |
 | `… controller code 99 …` / jog refused, safety | the pendant | A safety stop (SI0/SI1) is active: guard, emergency stop, a person in the cell | The person clears the safety circuit. Nothing is wrong with the drive |
 | `controller fault 1/89 — Peripheral (UDP) communication abnormal — link to the PLC is down` / an external-axis call `refused with controller code 14` | Devices page, the robot's jog panel | The controller's UDP link to the track PLC is down. rw2 runs `ExtDevUDPClientComReset` by itself | Still standing: the person checks the PLC and its cable; the controller's web console alarm offers "Restaurer la connexion" (restore the link) |
@@ -55,11 +56,11 @@ welder's panel, row "Power source".
 
 | Symptom | Read | Known cause | What to do |
 |---|---|---|---|
-| Panel shows `fault, code 7` (Err7) | the welder's panel `<url>/welders/{id}` (phone: `<url>/mobile/welder/{device}/panel`); `<url>/plugins` → the Megmeet plugin's installed version | A run whose arc never struck, then STOP: the arc command (E01) stayed on and the welder latched Err7. Fixed in Megmeet plugin **1.2.1** | The person clears it on the welder or presses "Reset fault" on the panel (shown while the fault is latched). Plugin older than 1.2.1: they update it on `/plugins`. Err7 after 1.2.1: send us the time, the run and the plugin version |
+| Panel shows `fault, code 7` (Err7) | the welder's panel `<url>/welders/{id}` (phone: `<url>/mobile/welder/{device}/panel`); `<url>/plugins` → the Megmeet plugin's installed version | Manual (ch. 6.1, Table 6-1): "The initial status for the torch error" — check the welding torch switch signals. Seen with rw2: a run whose arc never struck, then STOP, left the arc command (E01) on. Fixed in Megmeet plugin **1.2.1** | The person clears it on the welder or presses "Reset fault" on the panel (shown while the fault is latched). Plugin older than 1.2.1: they update it on `/plugins`. Err7 after 1.2.1: send us the time, the run and the plugin version |
 | `Err27 — external communication disconnected`, `Err28 — external communication abnormal` | the panel | The link to the robot side dropped | Cleared by the plugin after it reconnects. Repeating: check the network cable |
 | `Err30 — given setting out of range` | the panel; the program's weld values (`get_block_values`) | A value sent to the welder is outside what it accepts | Read the block's weld values; change them only if the person asks |
 | `Err31 — robot host not ready (E02)` | the panel | The welder waits for the robot-ready signal | Send us the time and the panel |
-| `fault, code N` (any other) | the panel | No explanation in the plugin | The welder manual, chapter "error codes"; send us the code |
+| `fault, code N` (any other) | the panel | No explanation in the plugin | The welder manual, ch. 6.1, Table 6-1; send us the code |
 | Welder not connected | `list_devices`; Devices page | No connection to the welder | The person checks the cable and IP; send us the Devices page status text |
 | `STOP FAILED — THE ARC MAY STILL BE LIVE` | — | STOP did not reach the welder | The person uses the physical emergency stop now. Then send us the time |
 
@@ -85,7 +86,7 @@ about 10 times a second.
 
 | Symptom | Read | Known cause | What to do |
 |---|---|---|---|
-| Overlay gone in the Player, comes back by itself (often while jogging) | Player log `%LOCALAPPDATA%\RocketWelderPlayer\logs\client.log`: lines `overlay_cost_refused … cost=… limit=…` | bug-077: the Player hid a frame whose estimated draw cost passed a limit. Fixed on native-player master, **not in a release** (v1.3.1 has the limit) | Tell the person it is known; the fix comes with the next Player release |
+| Overlay gone in the Player, comes back by itself (often while jogging) | Windows Player only: `%LOCALAPPDATA%\RocketWelderPlayer\logs\client.log` on the PC that shows the Player (never the Neuron), lines `overlay_cost_refused … cost=… limit=…`. Claude Code on that PC reads it itself; with Claude Desktop the person opens it. The Linux Player writes no log file | bug-077: the Player hid a frame whose estimated draw cost passed a limit. Fixed on native-player master, **not in a release** (v1.3.1 has the limit) | Tell the person it is known; the fix comes with the next Player release |
 | Points in the wrong place on the live picture | `get_live_overlay` / `get_live_projection` with the `id` of the program (rw2 2.93.0 on) | Calibration or adaptation in force | `list_skills`: load the calibration or adaptation skill if the station has one |
 
 Player started with `--debug` (default `--debug-http-port 9223`): on that computer `http://127.0.0.1:9223/v1/players` shows per
@@ -99,7 +100,7 @@ read `<axis>: <error>: <what>. Read <register> (<address>) = <value>`.
 
 | Symptom | Read | Known cause | What to do |
 |---|---|---|---|
-| `STOP INCOMPLETE — AN AXIS MAY STILL BE MOVING` after many STOP presses in a row | `<url>/version`; `<url>/plugins` → the generic-axis plugin's installed version | bug-076: concurrent Stops raced on the PLC's command registers; the carriage had stopped | The person checks the carriage is still. rw2 2.93.0 plus axis plugin 0.2.1 fix it; plugin 0.2.1 is not released yet. A single press is fine |
+| `STOP INCOMPLETE — AN AXIS MAY STILL BE MOVING` after many STOP presses in a row | `<url>/version`; `<url>/plugins` → the generic-axis plugin's installed version | bug-076: concurrent Stops raced on the PLC's command registers; the carriage had stopped | The person checks the carriage is still. rw2 2.93.0 plus the first generic-axis plugin release after 0.2.0 fix it; that release does not exist yet. A single press is fine |
 | `… refused in ErrorStop (…); call ResetAsync` | the axis page `<url>/mobile/axes/{device}` | The PLC is in ErrorStop | The person reads the fault (table below), removes its cause, presses Reset |
 | `… refused while Disabled; power on or home first` | the axis page | The drive is off | The person presses Enable or Home |
 | `… CommunicationLost: … failed twice (reconnected once)` / `did not attach` | `list_devices`; Devices page | Network, IP, port or unit id of the PLC | The person checks the PLC's power and cable; send us the message |
