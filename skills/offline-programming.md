@@ -28,14 +28,11 @@ Two MCP servers are used: **rocketwelder** (the station's rw2) and **simulator**
    rw2 is too old for this skill.
 2. simulator `list_simulators`. If `selected` is null: `select_simulator` with the twin the person named.
 
-## Step 2. The placed parts and their seams
+## Step 2. The parts
 
-1. simulator `list_assets`. It lists everything placed in the scene with its `label` (for example `part/door-a`).
-   Find the parts the person named and write down each `label` exactly as listed.
-2. For each part: simulator `get_placed_part_seams` with `placement` = the label. The answer lists that part's seams.
-   Write down how many seams each part has. (rw2 chooses the welding order of new seams itself: seams of one member together,
-   members along the rail. Seams a program already has keep their place.)
-   If a part has no seams, stop and report it: putting seams on a part is not part of this skill.
+Use the placement labels the person gave (for example `part/door-a`), exactly as given. Do not list the scene: its listing is
+too large to read. Step 5 checks the labels: its first answer says how many seams it found, and an unknown label or a part
+without seams is refused there with the reason. (rw2 chooses the welding order itself.)
 
 ## Step 3. The program
 
@@ -78,17 +75,19 @@ Creating takes minutes (a part with twenty seams: twenty to thirty-five). So it 
   It answers at once: `Planning started: N seams`. If it refuses, read the text: a wrong value is named; `already running`
   means a create of this program is in progress: go to 2, do not start another.
 
-2. rocketwelder `wait_for_program_from_seams` with `id` = the `programId` and `timeoutSeconds` = 600.
+2. rocketwelder `wait_for_program_from_seams` with `id` = the `programId` and `timeoutSeconds` = 90 (a longer wait is cut off
+   by the connection).
    - `ended` false: the `message` says `Still planning after … s: seam i of M` (or `Still checking the program's moves`). Call it
      again with the same arguments, as often as needed. Do not start a second create and do not cancel.
-   - `ended` true: `statusCode` 200 means the program is written and `answer` holds the result; read it as below. Any other
-     `statusCode`: nothing was written; `answer` holds the refusal: report it and stop.
+   - `ended` true: `statusCode` 200 means the program is written and `summary` holds the result; read it as below. Any other
+     `statusCode`: nothing was written; `summary.error` says why: report it and stop.
 
-   In `answer`, every seam has an `answer`:
+   In `summary`: `planned`, `unreachable`, `needsValue` (counts), `planningSeconds`, `checks`, and `seams`: one line per seam
+   with its `answer`:
 
 - `Planned`: nothing to do.
-- `NeedsValue`: `missing` names the value. Ask the person for it; start again with it.
-- `Unreachable`: go to step 6 for that seam.
+- `NeedsValue`: its `failure` names the value. Ask the person for it; start again with it.
+- `Unreachable`: its `failure` says in one sentence what stopped it, its `next` what to do. Go to step 6.
 
 Also read:
 
@@ -100,12 +99,14 @@ Also read:
     report word for word.
 - `causes`: the refused seams grouped by what stopped them, with a count and one `next` per group. Use it in step 6.
 - `returnFailure`. Null: the program ends where it started. Set: the way back is blocked; report it. The program can then be run
-  ONCE; rw2 refuses a second run until the robot is moved back. There is no override for it.
-- a seam's `notApplied`: sentences about how the seam is welded (sections, ends, corners, angles). Report the ones that say
-  `corner open`, `work angle applied` or `refused`.
-- a section with `reversed` true is welded from the seam's end to its start. That is allowed.
+  ONCE; rw2 refuses a second run until the robot is moved back.
+- `returnNext`: only with a `returnFailure`; treat it like a seam's `next` (step 6).
 
-Report `planningSeconds`, `checks`, and how many seams are `Planned`, `Unreachable`, `NeedsValue`.
+The summary is short on purpose. For ONE seam's full detail (its sections, how its ends and corners are welded, an applied work
+angle) call rocketwelder `get_program_from_seams_seam` with `id` and `seam` = the seam's name from its line. You need it only
+when the person asks about a seam; do not call it for every seam.
+
+Report `planningSeconds`, `checks`, and the three counts.
 
 To create again (step 6), call `start_program_from_seams` again with the same arguments plus the override, then wait again.
 
@@ -121,7 +122,7 @@ For each group in `causes` (one cause often stops several seams), read its `next
   time; read the new answer before the next. An override stays in force on every later create.
   Exception: when `member` is `workAngleDeg` the `reason` says it changes how the seam is welded. Do NOT apply it unless the
   person has said such values may be changed: report it with the seam.
-- `action` = `report`: nothing a caller can change. Report the seam with the `reason`, its `contacts` and `closest`.
+- `action` = `report`: nothing a caller can change. Report the seam with its `failure` sentence and the `reason`.
 
 Each create again takes as long as the first. If a seam is still `Unreachable` after two overrides, leave it and go on to step 7 with the seams that are planned. The seams
 left are in the warning `seams not welded by the program`.
@@ -134,7 +135,8 @@ No compile step is needed.
 1. rocketwelder `run_program` with the `programId`, `dryRun` = false. Leave `fromStart` out. Write down the run id the answer
    prints as `Run Id`.
 2. rocketwelder `wait_for_run` with `programId`, `runId`, `timeoutSeconds` = 600.
-   If it answers `Still running after 600 s`, call it again with the same arguments, as often as needed.
+   If it answers `Still running after 600 s`, call it again with the same arguments, as often as needed. If the call itself
+   fails with a timeout, use `timeoutSeconds` = 90 from then on.
    A long part takes a long time: one metre of weld at 8 mm/s is about two minutes, plus the moves between seams.
    If the run ends `Failed` or `Cancelled`, report the block it stopped at and its message, and stop. Do not start another run:
    the robot is no longer where the program starts.
