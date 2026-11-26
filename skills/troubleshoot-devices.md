@@ -128,7 +128,7 @@ A tagged Modbus device maps names (tags) to registers; tags are on the device's 
 | `read_modbus_tag` answers an error (404 Not Found) | `read_modbus_tag` with `deviceName` and `tagName` exactly as on the Devices page; Devices page Status | The station answers the same for an unknown device, an unknown tag and a failed read | Check the names first. Names right: the Status column says why (`Unreachable` = no answer to ping, `Connection failed` = no Modbus connection) |
 | `Unreachable` | Devices page | The device is off or the IP is wrong | The person checks power, cable, IP |
 | `Connection failed` | Devices page | The device answers ping but not Modbus TCP: port, or the device's Modbus server off | The person checks the device's Modbus settings against the device's Edit dialog |
-| A tag shows red on the dashboard's PLC card | the dashboard | That tag's read failed (a wrong unit id or register fails every read) | Check the device's `UnitId` and the tag's register on the Edit dialog |
+| A tag shows red on the PLC card of the Automations page | `<url>/automation` | That tag's read failed (a wrong unit id or register fails every read) | Check the device's `UnitId` and the tag's register on the Edit dialog |
 
 ## What to send us
 
