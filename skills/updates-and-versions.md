@@ -50,10 +50,10 @@ update the update log appears under "Update all".
 
 | Question | Answer |
 |---|---|
-| Which version runs here? | No tool reads it yet (`get_station_version` is missing). Ask the person for the rw2 version at the bottom of the station's left menu (or `<station url>/version`) and the Current version on the AutoUpdater card. Report both. |
+| Which version runs here? | No tool reads the current version (`get_station_version` is missing; `register_station` reads it only when a station is registered). Ask the person for the rw2 version at the bottom of the station's left menu (or `<station url>/version`) and the Current version on the AutoUpdater card. Report both. |
 | Is there an update? | The person opens `http://<station address>:8080/`, clicks the refresh icon on the RocketWelder card, and reads it: `Available upgrade:` with a release, or `Current version: X` when there is none. |
 | How do I update? | Confirm nothing runs, then click the run icon (Update package) on the RocketWelder card. The status line shows the progress; the station UI is unavailable while the welder restarts. Afterwards the status line shows `Current version: <new release>`. Check the new rw2 version in the station UI. |
-| A new skill is missing / not listed / Claude does not know it | Skills arrive with a station release. A skill not in `list_skills` is in a release this station has not installed: the operator updates the station (AutoUpdater), then call `list_skills` again. |
+| A new skill is missing / not listed / Claude does not know it | Skills arrive with a station release. A skill not in `list_skills` is in a release this station has not installed: the operator updates the station (AutoUpdater), then call `list_skills` again. If the AutoUpdater shows no update, the skill is not released yet: tell RocketWelder. |
 
 ## A failed update
 
