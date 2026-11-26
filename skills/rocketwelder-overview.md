@@ -42,7 +42,7 @@ real cell) or `Simulator` (a twin).
 | `/automation` Automations | the station at a glance: camera, robot, welder and PLC cards, programs, quick actions |
 | `/programs` Programs | the program list; opens the program editor `/teach/program/{id}` |
 | `/repositories` Repositories | the program repositories (git) |
-| `/station` | the operator's station view, where runs are started and followed |
+| `/station` | the operator's station view (Operator mode); a finished run page goes back to it |
 | `/pipelines` Pipelines | the camera pipelines and their state |
 | `/recordings` Recordings | recorded camera video |
 | `/devices` Devices (Settings) | every device, its status, its settings, "Reset all errors" |
