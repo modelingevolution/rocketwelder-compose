@@ -87,7 +87,8 @@ station without one, it says so and calls nothing.
 ## Running
 
 On the station the person presses **Run** in the program editor, and **STOP** stops it. A run's page is
-`/station/run/<run id>` (phone: `/mobile/station/run/<run id>`).
+`/station/run/<run id>` (phone: `/mobile/station/run/<run id>`) while it runs. An ended run, with its own error:
+`/program-executions/<run id>`.
 
 A run is **real** (`dryRun` false: the arm moves and the arc is on) or **dry** (`dryRun` true: the arm still moves through every
 motion, only the welder does nothing).
@@ -117,9 +118,10 @@ ended before reaching it).
 A run that ends `Failed` or `Cancelled`: the failed block's row names where it stopped, and the answer carries the
 station's last error (for example "MoveLin rejected (409): Collision …"). The last error is kept for the program's latest
 run only; `get_program_status` shows it as Last Error. For an older run, `get_run_progress` still prints that latest
-error, which belongs to another run: ignore it, and read the failed block's row and the run's page (`/station/run/<run
-id>`). The error shown is right only for the program's latest run. A robot or welder fault: `troubleshoot-devices`. An
-adaptation that was blocked or rejected: `adaptation-data-and-analysis`.
+error, which belongs to another run: ignore it, and read the failed block's row and the run's page in the program
+executions (`/program-executions/<run id>`), which shows that run's own error. The error shown is right only for the
+program's latest run. A robot or welder fault: `troubleshoot-devices`. An adaptation that was blocked or rejected:
+`adaptation-data-and-analysis`.
 
 ## What changed in a program
 
