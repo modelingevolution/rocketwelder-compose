@@ -21,6 +21,7 @@ All three are offered on the station AutoUpdater's Apps page.
 - You read; the person acts. Never install, update, reconfigure or restart a Player yourself, and never change the Neuron
   address it uses, unless the person asks for that exact change.
 - `POST /v1/input` and `POST /v1/players/{id}/url` of the debug REST are changes: never call them.
+- Never pass `confirmRealRobot`.
 - Device faults seen through the Player (robot, welder, pipelines, rw2 overlay rate, red bar): load the `troubleshoot-devices`
   skill.
 
