@@ -67,7 +67,7 @@ A switched-off block (`disabled`) stays in the program and is not run.
 - Points: `put_program_point`, `put_program_points` (a Point block declares the name first). Moving a point's pose drops its
   old adaptive correction.
 - Values: `set_block_value` / `clear_block_value` take effect on the next run, with no compile.
-  `set_program_default` / `reset_program_defaults` recompile the program.
+  `set_program_default` / `reset_program_defaults` need the etag from `get_program_defaults` and recompile the program.
 - After a block or point edit: `compile_project` (`programId`).
 - `capture_point` records where the robot stands now. It does not move the robot.
 
@@ -116,7 +116,8 @@ ended before reaching it).
 
 A run that ends `Failed` or `Cancelled`: the failed block's row names where it stopped, and the answer carries the
 station's last error (for example "MoveLin rejected (409): Collision …"). The last error is kept for the program's latest
-run only; `get_program_status` shows it as Last Error. A robot or welder fault: `troubleshoot-devices`.
+run only; `get_program_status` shows it as Last Error. For an older run, `get_run_progress` still prints that latest
+error, which belongs to another run: ignore it and read only the failed block's row. A robot or welder fault: `troubleshoot-devices`.
 An adaptation that was blocked or rejected: `adaptation-data-and-analysis`.
 
 ## What changed in a program
