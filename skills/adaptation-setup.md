@@ -1,7 +1,7 @@
 ---
 name: adaptation-setup
-description: Guide a person through setting up adaptation for a part on a RocketWelder station. Covers the views, the intermediate positions, the photos, marking the points, the correction of each point, a test run, and how to judge the result. The person moves the arm and takes the photos. You read and explain.
-triggers: [adaptation, set up adaptation, adaptation views, view photo, mark points, intermediate position, correction plane, adaptation review, adaptation result]
+description: Guide a person through setting up adaptation for a part on a RocketWelder station. Covers the views, the intermediate positions, the photos, marking the points (and marks or circles that do not show), the correction of each point, the review window, a test run, and how to judge the result. The person moves the arm and takes the photos. You read and explain.
+triggers: [adaptation, set up adaptation, adaptation views, view photo, photo, mark points, marks, mark not shown, circle, circle not shown, drew on the photo, marking tools disabled, station screen, intermediate position, wasted stop, reorder views, move joint, PTP to view, correction plane, adaptation review, review window, adaptation result]
 ---
 # Setting up adaptation
 
@@ -60,15 +60,16 @@ The camera must be calibrated. If it is not, the page says "The camera isn't cal
 4. More views: the person jogs to another angle and captures again. A point's height (depth) can be **triangulated** from its
    views. That needs at least 3 views of the point, a spread of at least 30° between their viewing angles, and rays that agree
    within 2 mm. The page shows "need ≥30° to triangulate" and "<n>° spread".
-5. Check: `get_views` lists each view with `joints` (degrees), `staleUnderCalibrationInForce` and `photoUrl`.
+5. Check: `get_views` lists each view with its joints (degrees), `Stale` (taken under an older camera calibration) and its photo.
    `get_view_photo` shows the stored photo.
 
-**Views are reached by joint moves only** (owner ruling, for adaptation views only). **Move joint** drives the arm to the
-selected view's exact recorded joints. Never use PTP or a linear move to reach a view. The status line reads "Arm at view
-<n>" when every joint is within 0.1°. A view with no recorded joints (taken before joints were recorded) says "pose only —
-re-capture to record joints". For such a view Move joint falls back to a pose move, so it is not reached by exact joints:
-the person presses Move joint once, then Re-capture, and from then on the view has its joints. Under a touch-sensed height
-or plane the run moves a view with the part, and then reaches it by a pose move.
+**Views are reached by joint moves only** (owner ruling). This rule is for adaptation views only: taught program points
+keep their PTP and linear moves. **Move joint** drives the arm to the selected view's exact recorded joints. Never use PTP
+or a linear move to reach a view. The status line reads "Arm at view <n>" when every joint is within 0.1°. A view with no
+recorded joints (taken before joints were recorded) says "pose only — re-capture to record joints". For such a view Move
+joint falls back to a pose move, so it is not reached by exact joints: the person presses Move joint once, then
+Re-capture, and from then on the view has its joints. Under a touch-sensed height or plane the run moves a view with the
+part, and then reaches it by a pose move.
 
 **Re-capture** (**◉ Re-capture view <n>**) takes the photo where the arm stands now, and the view moves there. To keep the
 view where it is, press **Move joint** first. After a re-capture from a new place, the marks on that view must be placed
@@ -87,9 +88,15 @@ Use one where the arm needs a waypoint between two views, usually to avoid a col
 5. At run time the arm drives through an intermediate position by its exact joints, with no settle wait and no photo. It
    is never moved with a touch-sensed height or plane.
 
-A view with no points, saved before rw2 2.93.0, stays a view: the run still settles there and takes a photo. To
-drop the stop, the person moves the arm to that view with Move joint, captures an intermediate position there, and removes
-the old view with the ✕ on its card ("Remove view <n>").
+A view with no points, saved before rw2 2.93.0, stays a view: the run still settles there and takes a photo. To drop the
+stop:
+
+1. Select the view and press **Move joint**: the arm goes to its exact joints.
+2. Press **⤳ Capture intermediate position**: it is inserted below the view, at those joints.
+3. Remove the old view with the ✕ on its card ("Remove view <n>").
+4. If needed, move the intermediate position with **▲ / ▼** so it stands where the old view stood in the list.
+
+At run time the arm is then driven through it by its exact joints, with no settle wait and no photo.
 
 `get_views` does not tell an intermediate position from a view with no points: both read `transit: true`. Use the page's
 Views list for that.
@@ -117,8 +124,9 @@ moves the arm.
 
 ## Step 5. A view's photo is out of date
 
-`staleUnderCalibrationInForce: true` means the camera was recalibrated after the view was taken. The page says "Recapture
+`Stale` true in `get_views` means the camera was recalibrated after the view was taken. The page says "Recapture
 this view first — the camera was recalibrated". The person presses Move joint, then Re-capture, and marks again.
+`Stale` covers the camera calibration only: a view taken under other joint offsets still reads `Stale` false.
 
 ## Step 6. The correction of each point
 
@@ -147,10 +155,14 @@ while a run screen (or a `watch_run`) holds the run open. With neither, the run 
 the reason, every view's photo with the points, and a row per point.
 
 - A point that was not found: the person marks it on the photo and presses **It is here**. **Reset** undoes that.
-- **✓ Accept and continue** applies the correction and welds. Closing the window rejects it, and the block stops.
+- **✓ Accept and continue** applies the correction and welds.
+- **Closing the window rejects it**: the block stops.
 - Read it with `get_pending_review` (`programId`, `runId` from `get_program_status`): the reason code and sentence, the
   proposed fit (tx, ty mm, rotation °), its residual, and per point whether it was found. Explain it to the person. On a
   `Real` station the person decides in the window. `decide_adaptation` is for simulator stations only.
+- After the run, `get_adaptation_result` (`programId`, `runId`) gives per axis X/Y/Z `Corrected` with its mm, or
+  `NotCorrected` / `Unknown` (never a measured 0), and the verdict (accepted, auto-accepted, rejected, unwatched, readapt,
+  blocked) with its reasons.
 
 ## Step 9. Judge the result
 
@@ -188,7 +200,7 @@ The station UI may be in Polish. The labels this skill names:
 
 | Fault | What the person sees | What to do |
 |---|---|---|
-| bug-078, native player (station screen) before rw2 2.93.0 | The photo shows no points. All marking tools are disabled. The status line says "Mark points from a browser — this screen cannot show the view's photo for marking." (PL: "Punkty oznaczaj w przeglądarce…") | Mark in a browser, or update to 2.93.0 or later. |
+| bug-078, native player (station screen) before rw2 2.93.0 | The photo shows no points. All marking tools are disabled. The status line says "Mark points from a browser — this screen cannot show the view's photo for marking." (PL: "Punkty oznaczaj w przeglądarce…") | Mark in a browser, or update to 2.93.0 or later. On 2.93.0 with the Linux native player one tap can add two points: press Undo in the page head (one mark is one undo step). |
 | bug-078, still open in 2.93.0, Linux native player | One tap sometimes adds two points | Press Undo in the page head: one mark is one undo step. |
 | bug-079, before rw2 2.93.0 | A circle (or any mark) does not appear after the drag. It appears after a page reload | The mark is saved. Reload (F5) and do not mark it again. |
 | bug-080, before rw2 2.93.0 | A new Adaptation block lands at the top of the program, not above the selected block | Move it with the block's ↑ / ↓ to where it belongs. |
