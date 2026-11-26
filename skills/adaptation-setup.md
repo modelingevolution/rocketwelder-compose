@@ -170,7 +170,6 @@ On a `Real` station the person decides in the window. `decide_adaptation` is for
 
 - per axis X/Y/Z: `Corrected` with its mm, or `NotCorrected` / `Unknown`
 - the verdict: accepted, auto-accepted, rejected, unwatched, readapt or blocked, with its reasons
-
 - per anchor: view, point, what it wrote (mm) and its residual (mm)
 - per point: taught and solved position
 
