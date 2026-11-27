@@ -32,8 +32,9 @@ All three are offered on the station AutoUpdater's Apps page.
   Windows: the start screen or Settings → Neurons. Android: settings sheet, "Neuron base URL". Linux kiosk: `KIOSK_URL` in
   `/etc/native-player/kiosk.conf` (default `http://localhost/auto-preview`, the station's own screen); changing it needs a
   shell on that device (`sudo kiosk-config --url …`), so it is the installer's job, not yours.
-- **Start-up:** the Player waits for the Neuron's `/health` before it opens the page. Windows shows `Waiting for the Neuron …`;
-  Linux shows a spinner, then `Waiting for server...` after 30 s.
+- **Start-up:** the Player polls the Neuron's `/health` every 3 s and opens the page on its first 200. Windows shows
+  `Waiting for the Neuron …`; Linux shows a spinner, then `Waiting for server...` after 30 s. While it waits: check the address
+  is `http://<IP>:<port>`, and the person opens `<url>/health` in a browser. No answer there = rw2 is not reachable or not up.
 - **Video**, per host:
 
   | Host | Plays |
