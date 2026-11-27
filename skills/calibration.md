@@ -15,7 +15,8 @@ Tell it whole, even before you have read anything. Then read the station and fil
 > 3. **Camera position:** judged only by the **Accuracy at the tip**, typical and largest in mm, from the tip touches. The
 >    photos' predicted precision (S) is the planner's goal, not an accuracy. A calibration saved without touches has no
 >    accuracy at the tip.
-> 4. **Still good today:** `list_health_checks` gives each health check's verdict `GoodToGo` and its tolerance in mm.
+> 4. **Still good today:** `list_health_checks` gives each health check's verdict `GoodToGo` (true, false, or null =
+>    no verdict yet) and its tolerance in mm.
 
 ## The three calibrations
 
