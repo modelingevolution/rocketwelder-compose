@@ -20,12 +20,12 @@ never enter a solve.
 
 ## Rules
 
-- **You never move the robot.** Never start, resume or retake a calibration run on a station whose kind is `Real`
-  (`list_stations`). The person does it on the page, and confirms every robot move there. Every move is checked in the
-  twin first.
+- **You never move the robot.** A calibration run moves the robot only when the person confirms each move on the page.
+  Every move is checked in the twin first.
 - Never pass `confirmRealRobot`, on any tool.
-- `upload_camera_calibration`, `restore_calibration_record`, `set_calibration_photo_timing` change the station. Use them only
-  when the person asks, and say what they will write first.
+- `upload_camera_calibration`, `restore_calibration_record`, `set_calibration_photo_timing`, `resume_calibration_run` and
+  `retake_calibration_poses` change the station. Use them only when the person asks, and say what they will write first.
+  Each one can be undone: see "Undoing a change".
 - Lengths are mm, angles degrees, pixels px.
 
 ## Where it is
@@ -101,8 +101,8 @@ Two run tools only open a page. The person continues there:
 - `retake_calibration_poses` opens a new run that retakes a record's photo poses. Nothing moves until the person starts it
   on the station. At the end the page compares the old run with the retake.
 
-On a `Real` station, do not call them: the person resumes the run from the Calibrations page, or uses **Retake from
-old poses** there.
+Use them only when the person asks. The person can also do both on the Calibrations page (resume the run, or **Retake
+from old poses**).
 
 Photos look blurred or late (the picture lags the arm): raise the wait with `set_calibration_photo_timing`, when the person
 asks. It applies to calibration photos only, station-wide.
@@ -132,6 +132,26 @@ done.
 
 The program cannot check the answer. A wrong one makes adaptation place the part
 wrong. Re-taking a view: skill `adaptation-setup`.
+
+## Undoing a change
+
+Every calibration change can be undone. Before any change, read and keep what it replaces.
+
+- **A saved calibration** (a wizard's Save, `upload_camera_calibration`, `restore_calibration_record`) adds a new revision.
+  Nothing is deleted: `list_calibration_records` lists every revision, and which one is in force. To go back, the person
+  presses **Restore** on the earlier record on the Calibrations page, or you call `restore_calibration_record` (`name`,
+  `revisionId`) when the person asks. It puts that record's lens, camera position and joint offsets back in force and
+  writes its joint offsets to the robot.
+  - Only a record that `list_calibration_records` shows as restorable (a guided run's save) can be restored. To undo a
+    restore, restore its original.
+  - When the calibration in force is validated, the restore is refused (409 `replaces-validated`). Pass
+    `replaceValidated` true only when the person says so.
+  - A restore is a calibration change like any other: the camera set-up card and the programs' views react to it
+    ("After a new calibration").
+- **Photo timing** (`set_calibration_photo_timing`): read `get_calibration_photo_timing` first, and set the old wait and
+  frames back to undo it.
+- **A run opened by `resume_calibration_run` or `retake_calibration_poses`**: the person presses **Discard** on its page.
+  Nothing is saved until Save.
 
 ## What to send us
 
