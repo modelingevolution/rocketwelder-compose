@@ -1,7 +1,7 @@
 ---
 name: station-configuration
 description: Where each RocketWelder station setting lives (settings pages, station and program defaults, devices, pipelines, configuration files), what the important ones do and their defaults, which the person changes in the UI and which need RocketWelder, and when Claude may change one.
-triggers: [settings, configuration, station defaults, initial settings, program defaults, devices page, pipelines, calibration photos, language, plugins, appsettings, change a setting]
+triggers: [settings, configuration, station defaults, initial settings, program defaults, devices page, pipelines, calibration photos, language, plugins, appsettings, change a setting, camera configured, is the camera configured right, device settings, device properties, device configuration]
 ---
 # Station configuration
 
@@ -69,12 +69,16 @@ or flag; `set_program_default` needs the etag from `get_program_defaults`.
 
 The wait after the arm stops before a calibration photo is taken, and the camera frames skipped after it. Built-in: 200 ms and 3
 frames. The wait in force is never below the robot's own settle delay. Raise the wait when calibration photos are blurred or taken
-late. It applies only to guided calibration photos.
+late. It applies only to guided calibration photos. Read it with `get_calibration_photo_timing`; the person sees and changes it
+on Settings → Calibration photos / Ustawienia → Zdjęcia kalibracyjne (`/settings/calibration-photos`).
 
 ## Devices and pipelines
 
-A device is added, configured and removed on the Devices page by the person. `list_devices` shows each device's name, interface
-(robot, welder, camera, …) and whether it is connected.
+A device is added, configured and removed on the Devices page by the person: Settings → Devices / Ustawienia → Urządzenia
+(`/devices`). `list_devices` shows each device's name, interface (robot, welder, camera, …) and whether it is connected, not its
+properties. To check how a device (e.g. a camera) is configured, the person opens it on the Devices page and reads its properties;
+no tool reads them yet (`list_peripheral_devices` is missing). A camera's calibration is a different question: see the calibration
+skill.
 
 A pipeline is the camera's video processing. `start_pipeline` and `stop_pipeline` return when the command is accepted; read the
 result with `get_pipeline_status`. A pipeline does not start while another pipeline uses the same Basler camera; stop that one first.
