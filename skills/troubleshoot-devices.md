@@ -12,9 +12,16 @@ at the station url (`list_stations` shows it as `url`). There is no shell on the
 
 - Never move the robot, an axis or the welder, and never start a program on a `Real` station (`list_stations` → `kind`). Never
   pass `confirmRealRobot`.
-- Never change a device setting, a tool frame, a pipeline or a plugin unless the person asks for that exact change. Starting or
-  stopping a pipeline is a change: ask first.
-- "Reset", "Home", "Enable", "Reset fault" and "Reset all errors" are pressed by the person at the station, never by you.
+- Make a change only when the person asks for it. Before it, read the current state; after it, say how to undo it:
+
+  | Change | Undo |
+  |---|---|
+  | `start_pipeline` | `stop_pipeline` with the same id |
+  | `stop_pipeline` | `start_pipeline` with the same id |
+  | `set_block_value` | read the value first with `get_block_values`. Its layer was `block`: `set_block_value` with the old value; any other layer: `clear_block_value` |
+  | `clear_block_value` | `set_block_value` with the value `get_block_values` showed before |
+
+- "Reset", "Home", "Enable", "Reset fault" and "Reset all errors" are buttons at the station: the person presses them.
 - On a `Real` station, if you are unsure what a step does to the cell, stop and ask.
 - Quote the error text exactly as the station gave it. Do not repeat a refused call unchanged.
 - A tool named here that is not in your tool list is not on this station's rw2 version: use the page named beside it.
@@ -59,7 +66,7 @@ welder's panel, row "Power source".
 |---|---|---|---|
 | Panel shows `fault, code 7` (Err7) | the welder's panel `<url>/welders/{id}` (phone: `<url>/mobile/welder/{device}/panel`); `<url>/plugins` → the Megmeet plugin's installed version | Manual (ch. 6.1, Table 6-1): "The initial status for the torch error" — check the welding torch switch signals. Seen with rw2: a run whose arc never struck, then STOP, left the arc command (E01) on. Fixed in Megmeet plugin **1.2.1** | The person clears it on the welder or presses "Reset fault" on the panel (shown while the fault is latched). Plugin older than 1.2.1: they update it on `/plugins`. Err7 after 1.2.1: send us the time, the run and the plugin version |
 | `Err27 — external communication disconnected`, `Err28 — external communication abnormal` | the panel | The link to the robot side dropped | Cleared by the plugin after it reconnects. Repeating: check the network cable |
-| `Err30 — given setting out of range` | the panel; the program's weld values (`get_block_values`) | A value sent to the welder is outside what it accepts | Read the block's weld values; change them only if the person asks |
+| `Err30 — given setting out of range` | the panel; the program's weld values (`get_block_values`) | A value sent to the welder is outside what it accepts | Read the block's weld values; change one only if the person asks (undo as in Rules) |
 | `Err31 — robot host not ready (E02)` | the panel | The welder waits for the robot-ready signal | Send us the time and the panel |
 | `fault, code N` (any other) | the panel | No explanation in the plugin | The welder manual, ch. 6.1, Table 6-1; send us the code |
 | Welder not connected | `list_devices`; Devices page | No connection to the welder | The person checks the cable and IP; send us the Devices page status text |
