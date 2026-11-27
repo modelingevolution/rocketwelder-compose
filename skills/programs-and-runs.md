@@ -123,6 +123,23 @@ executions (`/program-executions/<run id>`), which shows that run's own error. T
 program's latest run. A robot or welder fault: `troubleshoot-devices`. An adaptation that was blocked or rejected:
 `adaptation-data-and-analysis`.
 
+## Undoing a change
+
+Every program edit can be undone. Each block, point, block value and program default edit is one program history step,
+and `get_program_history` lists them.
+
+- **Undo in the program editor** (the ↶ button, its tooltip "Undo: <step>") reverses the program's most recent step and
+  records the undo as a step of its own. Press it again to go back one more step. Redo (the button beside it, or Ctrl+Y) re-applies; Undo is also Ctrl+Z.
+- The MCP has no undo tool yet. Until it has, tell the person to press Undo, or write the old value back:
+  - `set_block_value`: set the old value again, or `clear_block_value` when the block had none (`get_block_values`
+    shows both before the change).
+  - `set_program_default`: set the old value again (`get_program_defaults` before the change).
+  - `put_program_point` / `put_program_points`: write the old pose, joints and axes (`get_program_points` before the
+    change).
+  - A block edit: the opposite edit (`remove_program_block` after an add, `set_block_enabled` back, `move_program_block`
+    back), or Undo in the editor.
+- Before any change, read and keep what it replaces. After undoing a block or point edit, compile as after the edit.
+
 ## What changed in a program
 
 `get_program_history` lists every edit as one commit. An agent's edit reads "… via API". A deleted program's history is
