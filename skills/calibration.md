@@ -165,9 +165,11 @@ names `upload_camera_calibration` takes) and `get_calibration_photo_timing`.
     `get_calibration_record` of the earlier revision) puts them back. Only when the person asks.
   - A restore or an upload is a calibration change like any other: the camera set-up card and the programs' views react
     to it ("After a new calibration").
-- **Joint offsets written by Correct the joints** are not undone by a restore. `upload_camera_calibration` with the
-  offsets read before (`jointOffsetsDeg`, with the robot) writes them back to the robot first, then adds a revision.
-  Only when the person asks.
+- **Joint offsets written by Correct the joints** are not undone by a restore. `upload_camera_calibration` with the whole
+  calibration read before the change (lens, camera position and `jointOffsetsDeg`, with the robot) writes the offsets back
+  to the robot first, then adds a revision. Never upload the offsets alone: the camera position in force belongs to the
+  offsets it was solved with. If the camera position was calibrated again after Correct the joints, calibrate it again
+  after the undo. Only when the person asks.
 - **Photo timing** (`set_calibration_photo_timing`): set the old wait and frames back.
 - **A run opened by `resume_calibration_run` or `retake_calibration_poses`**: the person presses **Discard** on its page.
   Nothing is saved until Save.
