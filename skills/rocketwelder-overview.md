@@ -28,10 +28,11 @@ This skill is the index. Load the skill the routing table names, then work from 
 real cell) or `Simulator` (a twin).
 
 - You never move a `Real` robot. The MCP refuses robot moves on a `Real` station. Never pass `confirmRealRobot`.
-- On a `Real` station, you read and explain. The person moves, runs, resets and changes things at the station.
+- On a `Real` station the person moves the robot, runs programs and presses the station's reset buttons.
 - There is no shell on the station. You use the MCP tools, the station's pages (the person opens `<url>/…`; `url` comes from
   `list_stations`) and the REST routes that a skill names.
-- Change a setting only when the person asks for that exact change.
+- Make a change only when the person asks for it, and say how to undo it. The skill for that area names each change and its
+  undo.
 
 ## Main pages
 
