@@ -125,11 +125,13 @@ program's latest run. A robot or welder fault: `troubleshoot-devices`. An adapta
 
 ## Undoing a change
 
-Every program edit can be undone. Each block, point, block value and program default edit is one program history step,
-and `get_program_history` lists them.
+Each block, point, block value and program default edit is one program history step, and `get_program_history` lists
+them.
 
 - **Undo in the program editor** (the ↶ button, its tooltip "Undo: <step>") reverses the program's most recent step and
-  records the undo as a step of its own. Press it again to go back one more step. Redo (the button beside it, or Ctrl+Y) re-applies; Undo is also Ctrl+Z.
+  records the undo as a step of its own. Press it again to go back one more step. Undo can refuse, writing nothing:
+  the step's files changed since (Conflict), the step replaced or deleted a captured image (Evidence), or a value edit
+  still owes a file to a later step (Busy). Then write the old value back as below. Redo (the button beside it, or Ctrl+Y) re-applies; Undo is also Ctrl+Z.
 - The MCP has no undo tool yet. Until it has, tell the person to press Undo, or write the old value back:
   - `set_block_value`: set the old value again, or `clear_block_value` when the block had none (`get_block_values`
     shows both before the change).
