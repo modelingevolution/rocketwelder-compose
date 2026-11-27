@@ -29,9 +29,11 @@ program's points to match. It lives in an **Adaptation block** in the program.
   explain and check. Never call `run_program` or `decide_adaptation` on a station whose kind is `Real` (see `list_stations`).
 - Never pass `confirmRealRobot`, on any tool. The station's name in it lets a move through on a `Real` station.
 - A change tool (`set_point_correction`, `remove_point_correction`) changes the program. Use it only when the person asks,
-  and say what it will write first.
-- Units: mm and degrees. One exception: `get_robot_joints` answers in **radians**, while `get_views` gives the view's joints
-  in **degrees**.
+  and say what it will write first. It can be undone: each write is one program history step (`get_program_history`), so
+  **Undo** in the page head reverses it. Or write the old correction back: `get_views` shows each mark's correction before
+  the change; `remove_point_correction` when it had none.
+- Units: mm and degrees. `get_robot_joints` labels its values "rad", but they are **degrees**, as are the view's joints
+  in `get_views`.
 - A refusal is an answer: read it to the person. Do not repeat a refused call unchanged.
 
 ## Step 1. The program and its Adaptation block
