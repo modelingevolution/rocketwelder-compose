@@ -45,6 +45,7 @@ update the update log appears under "Update all".
 - **An update restarts the welder.** It stops every service of the station (`docker compose down`) and starts them again, even when only skills changed. Update only when no program is running and nobody is welding. To check, call `get_program_status` for the program in use and confirm it is not `Running`.
 - **Skills arrive with a station release.** A new or changed skill is served after the update that carries it. `list_skills` shows the result.
 - **The newest release wins.** Update always goes to the highest release number; it does not offer a choice of version.
+- **Claude changes nothing here.** Updating and restoring are the operator's clicks on the AutoUpdater page. An update is undone with the Backup menu → Manage Backups → Restore on a backup taken before it: that restores the data and checks out the release the backup was taken on.
 
 ## Answering the common questions
 
