@@ -21,8 +21,8 @@ All three are offered on the station AutoUpdater's Apps page.
 - Never move a `Real` robot; never pass `confirmRealRobot`.
 - Installing, updating, restarting a Player and its Neuron address are the person's: no tool of yours does them.
 - Never call `POST /v1/input`: a synthetic tap can press a button that moves the robot.
-- `POST /v1/players/{id}/url` only when the person asks for it. Before it, read the player's `url` from `/v1/players`; to undo,
-  post that url back.
+- Never call `POST /v1/players/{id}/url`: it cannot be undone from here, because `/v1/players` shows the url with its stream token
+  redacted.
 - Device faults seen through the Player (robot, welder, pipelines, rw2 overlay rate, red bar): load the `troubleshoot-devices`
   skill.
 
