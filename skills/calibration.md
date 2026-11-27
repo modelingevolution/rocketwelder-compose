@@ -5,6 +5,18 @@ triggers: [calibration, calibrate camera, lens calibration, intrinsics, joint co
 ---
 # Camera calibration
 
+## "Is the camera calibration good?" — tell the person this whole
+
+Tell it whole, even before you have read anything. Then read the station and fill in its values.
+
+> 1. **What is in force:** `get_camera_calibration` shows the lens, the camera position, the joint offsets, the RMS, whether
+>    it was validated, and its revision.
+> 2. **Lens:** good when the card's "picture fit" (px) is close to the corner noise the wizard showed.
+> 3. **Camera position:** judged only by the **Accuracy at the tip**, typical and largest in mm, from the tip touches. The
+>    photos' predicted precision (S) is the planner's goal, not an accuracy. A calibration saved without touches has no
+>    accuracy at the tip.
+> 4. **Still good today:** `list_health_checks` gives each health check's verdict `GoodToGo` and its tolerance in mm.
+
 ## The three calibrations
 
 A camera is calibrated in three independent steps, **in this order**. Each step uses only the results of the steps before it.
