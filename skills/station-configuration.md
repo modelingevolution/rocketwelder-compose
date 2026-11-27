@@ -7,7 +7,20 @@ triggers: [settings, configuration, station defaults, initial settings, program 
 
 ## When Claude changes a setting
 
-Claude changes a setting only when the person asks for that change; never passes `confirmRealRobot`.
+Claude changes a setting only when the person asks for that change; never passes `confirmRealRobot`. Every change below can be
+undone. Before a change, read the current value and tell it to the person: for station defaults and photo timing, that value is
+the undo.
+
+## Undoing a change
+
+| Change | How to undo it |
+|---|---|
+| `set_station_default` | `set_station_default` with the value read before. `clear_station_default` returns the built-in, not the previous value. Station defaults keep no history |
+| `clear_station_default` | `set_station_default` with the value read before |
+| `set_program_default`, `reset_program_defaults` | Each is one step of the program's history (`get_program_history`). The person clicks Undo / Cofnij in the program editor (tooltip "Undo: <step>"), or Claude sets the old value back with `set_program_default` (from `get_program_defaults` before the change). Undo is refused while the program runs |
+| `set_calibration_photo_timing` | `set_calibration_photo_timing` with the two values read before (`get_calibration_photo_timing`). Once saved, the timing cannot return to the configuration-file or built-in value; nothing clears it |
+| `start_pipeline` | `stop_pipeline` |
+| `stop_pipeline` | `start_pipeline` |
 
 ## Where each setting lives
 
@@ -83,3 +96,11 @@ Ask RocketWelder for these. Say the setting, the value wanted and why.
 | Tool | Effect | Endpoint | Owner |
 |---|---|---|---|
 | `list_peripheral_devices` | read | rw2 `GET /api/peripheral-devices` (every device with its properties and health, no parameters), marked `.ForAgents("list_peripheral_devices", ToolEffect.Read)` | rw2 |
+
+## Missing undo and history tools
+
+| Tool | Effect | Endpoint | Owner |
+|---|---|---|---|
+| `undo_program_edit` | change | rw2 `POST /api/programs/{id}/undo` exists (the editor's Undo), marked `.ForAgents("undo_program_edit", ToolEffect.Change)` | rw2 |
+| `get_station_defaults_history` | read | new: station defaults are kept in the runtime configuration file, with no history | rw2 |
+| `clear_calibration_photo_timing` | change | new `DELETE /api/station/guided-calibration/settle`: back to the configuration-file or built-in value | rw2 |
