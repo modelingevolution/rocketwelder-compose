@@ -37,7 +37,7 @@ never enter a solve.
 - Never pass `confirmRealRobot`, on any tool.
 - `upload_camera_calibration`, `restore_calibration_record`, `set_calibration_photo_timing`, `resume_calibration_run` and
   `retake_calibration_poses` change the station. Use them only when the person asks, and say what they will write first.
-  Each one can be undone: see "Undoing a change".
+  How each one is undone: "Undoing a change".
 - Lengths are mm, angles degrees, pixels px.
 
 ## Where it is
@@ -147,21 +147,27 @@ wrong. Re-taking a view: skill `adaptation-setup`.
 
 ## Undoing a change
 
-Every calibration change can be undone. Before any change, read and keep what it replaces.
+Before any change, read and keep what it replaces: `get_camera_calibration` (the calibration in force, under the same
+names `upload_camera_calibration` takes) and `get_calibration_photo_timing`.
 
 - **A saved calibration** (a wizard's Save, `upload_camera_calibration`, `restore_calibration_record`) adds a new revision.
-  Nothing is deleted: `list_calibration_records` lists every revision, and which one is in force. To go back, the person
-  presses **Restore** on the earlier record on the Calibrations page, or you call `restore_calibration_record` (`name`,
-  `revisionId`) when the person asks. It puts that record's lens, camera position and joint offsets back in force and
-  writes its joint offsets to the robot.
-  - Only a record that `list_calibration_records` shows as restorable (a guided run's save) can be restored. To undo a
-    restore, restore its original.
-  - When the calibration in force is validated, the restore is refused (409 `replaces-validated`). Pass
+  Nothing is deleted: `list_calibration_records` lists every revision, and which one is in force.
+  - **Restore** on the earlier record on the Calibrations page, or `restore_calibration_record` (`name`, `revisionId`)
+    when the person asks, puts that record's lens and camera position back in force. It never writes the robot's joint
+    offsets. It is refused (409) for a record that is not a guided run's save, a record without joint offsets, or one
+    solved under other joint offsets than the robot has now (`other-joint-offsets`).
+  - To undo a restore, restore the revision that was in force before it (the record's previous revision), when that one
+    is restorable.
+  - When the calibration in force is validated, a restore or an upload is refused (409 `replaces-validated`). Pass
     `replaceValidated` true only when the person says so.
-  - A restore is a calibration change like any other: the camera set-up card and the programs' views react to it
-    ("After a new calibration").
-- **Photo timing** (`set_calibration_photo_timing`): read `get_calibration_photo_timing` first, and set the old wait and
-  frames back to undo it.
+  - Where no restore is possible, `upload_camera_calibration` with the values read before the change (or with
+    `get_calibration_record` of the earlier revision) puts them back. Only when the person asks.
+  - A restore or an upload is a calibration change like any other: the camera set-up card and the programs' views react
+    to it ("After a new calibration").
+- **Joint offsets written by Correct the joints** are not undone by a restore. `upload_camera_calibration` with the
+  offsets read before (`jointOffsetsDeg`, with the robot) writes them back to the robot first, then adds a revision.
+  Only when the person asks.
+- **Photo timing** (`set_calibration_photo_timing`): set the old wait and frames back.
 - **A run opened by `resume_calibration_run` or `retake_calibration_poses`**: the person presses **Discard** on its page.
   Nothing is saved until Save.
 
