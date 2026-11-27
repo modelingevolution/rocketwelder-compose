@@ -17,7 +17,7 @@ the undo.
 |---|---|
 | `set_station_default` | `set_station_default` with the value read before. `clear_station_default` returns the built-in, not the previous value. Station defaults keep no history |
 | `clear_station_default` | `set_station_default` with the value read before |
-| `set_program_default`, `reset_program_defaults` | Each is one step of the program's history (`get_program_history`). The person clicks Undo / Cofnij in the program editor (tooltip "Undo: <step>"), or Claude sets the old value back with `set_program_default` (from `get_program_defaults` before the change). Undo is refused while the program runs |
+| `set_program_default`, `reset_program_defaults` | Each is one step of the program's history (`get_program_history`). The person clicks Undo / Cofnij in the program editor; it takes back the newest step first, so the person checks that its tooltip ("Undo: <step>") names this change. Or Claude sets the old value back with `set_program_default` (from `get_program_defaults` before the change). Undo is refused while the program runs |
 | `set_calibration_photo_timing` | `set_calibration_photo_timing` with the two values read before (`get_calibration_photo_timing`). Once saved, the timing cannot return to the configuration-file or built-in value; nothing clears it |
 | `start_pipeline` | `stop_pipeline` |
 | `stop_pipeline` | `start_pipeline` |
