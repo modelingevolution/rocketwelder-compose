@@ -77,8 +77,7 @@ on Settings → Calibration photos / Ustawienia → Zdjęcia kalibracyjne (`/set
 A device is added, configured and removed on the Devices page by the person: Settings → Devices / Ustawienia → Urządzenia
 (`/devices`). `list_devices` shows each device's name, interface (robot, welder, camera, …) and whether it is connected, not its
 properties. To check how a device (e.g. a camera) is configured, the person opens it on the Devices page and reads its properties;
-no tool reads them yet (`list_peripheral_devices` is missing). A camera's calibration is a different question: see the calibration
-skill.
+no tool reads them yet (`list_peripheral_devices` is missing). A camera's calibration is a different question: `load_skill calibration`.
 
 A pipeline is the camera's video processing. `start_pipeline` and `stop_pipeline` return when the command is accepted; read the
 result with `get_pipeline_status`. A pipeline does not start while another pipeline uses the same Basler camera; stop that one first.
